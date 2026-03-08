@@ -57,7 +57,10 @@ const events = [
 ];
 
 const EventsPreview = () => {
+  const [selectedEvent, setSelectedEvent] = useState<typeof events[0] | null>(null);
+
   return (
+    <>
     <section id="eventos" className="py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
