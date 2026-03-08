@@ -121,21 +121,23 @@ const EventsPreview = () => {
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="w-full bg-muted rounded-full h-2 mb-4">
-                  <div
-                    className="h-2 rounded-full gradient-hero transition-all duration-500"
-                    style={{ width: `${(event.volunteers / event.max) * 100}%` }}
-                  />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    Ver detalles
+                  </Button>
+                  <Button
+                    className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                    size="sm"
+                    onClick={() => toast.success(`🎉 ¡Te has inscrito a "${event.title}"! (demo)`)}
+                  >
+                    Unirme
+                  </Button>
                 </div>
-
-                <Button
-                  className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90"
-                  size="sm"
-                  onClick={() => toast.success(`🎉 ¡Te has inscrito a "${event.title}"! (demo)`)}
-                >
-                  Unirme al evento
-                </Button>
               </div>
             </motion.div>
           ))}
@@ -154,6 +156,53 @@ const EventsPreview = () => {
         </motion.div>
       </div>
     </section>
+
+    <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+      <DialogContent className="sm:max-w-md">
+        {selectedEvent && (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{selectedEvent.emoji}</span>
+                <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
+                  {selectedEvent.type}
+                </span>
+              </div>
+              <DialogTitle className="text-xl">{selectedEvent.title}</DialogTitle>
+              <DialogDescription>{selectedEvent.description}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{selectedEvent.location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="w-4 h-4" />
+                <span>{selectedEvent.date} • {selectedEvent.schedule}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>{selectedEvent.volunteers}/{selectedEvent.max} voluntarios</span>
+              </div>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="font-semibold text-foreground mb-1">Requisitos</p>
+                <p className="text-muted-foreground">{selectedEvent.requirements}</p>
+              </div>
+            </div>
+            <Button
+              className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 mt-2"
+              onClick={() => {
+                toast.success(`🎉 ¡Te has inscrito a "${selectedEvent.title}"! (demo)`);
+                setSelectedEvent(null);
+              }}
+            >
+              Unirme al evento
+            </Button>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
