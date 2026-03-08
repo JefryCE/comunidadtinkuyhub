@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const scrollToSection = (id: string) => {
     setMobileOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("¡Hasta pronto! 👋");
   };
 
   const links = [
@@ -48,12 +57,30 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => toast.info("🔐 ¡Próximamente! El inicio de sesión estará disponible pronto.")}>
-              Iniciar sesión
-            </Button>
-            <Button size="sm" className="gradient-cta text-primary-foreground border-0 hover:opacity-90" onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}>
-              Únete gratis
-            </Button>
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground">
+                  {user.user_metadata?.full_name || user.email}
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Salir
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
+                  Iniciar sesión
+                </Button>
+                <Button
+                  size="sm"
+                  className="gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                  onClick={() => navigate("/auth")}
+                >
+                  Únete gratis
+                </Button>
+              </>
+            )}
           </div>
 
           <button
@@ -85,12 +112,21 @@ const Navbar = () => {
                 </button>
               ))}
               <div className="pt-3 border-t border-border space-y-2">
-                <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => toast.info("🔐 ¡Próximamente! El inicio de sesión estará disponible pronto.")}>
-                  Iniciar sesión
-                </Button>
-                <Button size="sm" className="w-full gradient-cta text-primary-foreground border-0" onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}>
-                  Únete gratis
-                </Button>
+                {user ? (
+                  <Button variant="ghost" size="sm" className="w-full justify-center" onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-1" />
+                    Cerrar sesión
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                      Iniciar sesión
+                    </Button>
+                    <Button size="sm" className="w-full gradient-cta text-primary-foreground border-0" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                      Únete gratis
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

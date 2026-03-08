@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-20 lg:py-28">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,7 +31,7 @@ const CTASection = () => {
             <Button
               size="lg"
               className="gradient-cta text-primary-foreground border-0 hover:opacity-90 shadow-hero text-base px-10 h-14"
-              onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}
+              onClick={() => navigate("/auth")}
             >
               Únete a la comunidad de voluntarios
               <ArrowRight className="ml-2 w-5 h-5" />

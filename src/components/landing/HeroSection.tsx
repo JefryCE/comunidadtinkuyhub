@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-volunteers.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -49,7 +50,7 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 className="gradient-cta text-primary-foreground border-0 hover:opacity-90 shadow-hero text-base px-8 h-12"
-                onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}
+                onClick={() => navigate("/auth")}
               >
                 Únete como voluntario
                 <ArrowRight className="ml-2 w-5 h-5" />
