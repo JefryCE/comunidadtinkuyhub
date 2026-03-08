@@ -5,6 +5,7 @@ import EventsPreview from "@/components/landing/EventsPreview";
 import ImpactStats from "@/components/landing/ImpactStats";
 import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
+import ScrollToTop from "@/components/landing/ScrollToTop";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
       <ImpactStats />
       <CTASection />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };
