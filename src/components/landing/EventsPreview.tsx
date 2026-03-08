@@ -21,6 +21,10 @@ const events = [
     volunteers: 34,
     max: 50,
     color: "from-secondary to-primary",
+    description:
+      "Únete a nuestra jornada de limpieza en Playa del Sol. Recogeremos residuos plásticos, vidrio y otros desechos a lo largo de 2 km de costa. Se proporcionarán guantes, bolsas y refrigerios. ¡Juntos podemos devolver la belleza a nuestras playas!",
+    schedule: "8:00 AM - 1:00 PM",
+    requirements: "Ropa cómoda, protector solar, botella reutilizable.",
   },
   {
     emoji: "🌳",
@@ -31,6 +35,10 @@ const events = [
     volunteers: 18,
     max: 30,
     color: "from-primary to-primary",
+    description:
+      "Ayúdanos a plantar más de 200 árboles nativos en zonas degradadas del Parque Nacional. Aprenderás sobre especies locales y técnicas de siembra. Ideal para familias y grupos de amigos.",
+    schedule: "7:00 AM - 12:00 PM",
+    requirements: "Botas o zapatos cerrados, ropa que se pueda ensuciar.",
   },
   {
     emoji: "🏞️",
@@ -41,6 +49,10 @@ const events = [
     volunteers: 42,
     max: 60,
     color: "from-primary to-secondary",
+    description:
+      "El Parque Central necesita un nuevo aire. Pintaremos bancas, repararemos juegos infantiles, plantaremos flores y limpiaremos senderos. Una oportunidad perfecta para impactar el corazón de la ciudad.",
+    schedule: "9:00 AM - 3:00 PM",
+    requirements: "Ropa de trabajo, muchas ganas de ayudar.",
   },
 ];
 
