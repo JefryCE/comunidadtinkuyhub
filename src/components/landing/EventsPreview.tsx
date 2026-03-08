@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const events = [
   {
