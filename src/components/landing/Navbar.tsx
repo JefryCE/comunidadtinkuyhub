@@ -2,15 +2,21 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const scrollToSection = (id: string) => {
+    setMobileOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const links = [
-    { label: "Inicio", href: "#hero" },
-    { label: "Cómo funciona", href: "#como-funciona" },
-    { label: "Eventos", href: "#eventos" },
-    { label: "Impacto", href: "#impacto" },
+    { label: "Inicio", id: "hero" },
+    { label: "Cómo funciona", id: "como-funciona" },
+    { label: "Eventos", id: "eventos" },
+    { label: "Impacto", id: "impacto" },
   ];
 
   return (
@@ -22,38 +28,34 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-2">
+          <button onClick={() => scrollToSection("hero")} className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl gradient-hero flex items-center justify-center">
               <Leaf className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">TINKUYHUB</span>
-          </a>
+          </button>
 
-          {/* Desktop links */}
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
+              <button
+                key={link.id}
+                onClick={() => scrollToSection(link.id)}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => toast.info("🔐 ¡Próximamente! El inicio de sesión estará disponible pronto.")}>
               Iniciar sesión
             </Button>
-            <Button size="sm" className="gradient-cta text-primary-foreground border-0 hover:opacity-90">
+            <Button size="sm" className="gradient-cta text-primary-foreground border-0 hover:opacity-90" onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}>
               Únete gratis
             </Button>
           </div>
 
-          {/* Mobile toggle */}
           <button
             className="md:hidden text-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -63,7 +65,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -75,20 +76,19 @@ const Navbar = () => {
           >
             <div className="px-4 py-4 space-y-3">
               {links.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                <button
+                  key={link.id}
+                  onClick={() => scrollToSection(link.id)}
+                  className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
                   {link.label}
-                </a>
+                </button>
               ))}
               <div className="pt-3 border-t border-border space-y-2">
-                <Button variant="ghost" size="sm" className="w-full justify-center">
+                <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => toast.info("🔐 ¡Próximamente! El inicio de sesión estará disponible pronto.")}>
                   Iniciar sesión
                 </Button>
-                <Button size="sm" className="w-full gradient-cta text-primary-foreground border-0">
+                <Button size="sm" className="w-full gradient-cta text-primary-foreground border-0" onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}>
                   Únete gratis
                 </Button>
               </div>

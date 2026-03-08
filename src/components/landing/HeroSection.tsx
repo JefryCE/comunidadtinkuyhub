@@ -1,9 +1,14 @@
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import heroImage from "@/assets/hero-volunteers.jpg";
 
 const HeroSection = () => {
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section id="hero" className="relative min-h-screen flex items-center pt-16 overflow-hidden">
       {/* Background decoration */}
@@ -44,6 +49,7 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 className="gradient-cta text-primary-foreground border-0 hover:opacity-90 shadow-hero text-base px-8 h-12"
+                onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}
               >
                 Únete como voluntario
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -52,6 +58,7 @@ const HeroSection = () => {
                 variant="outline"
                 size="lg"
                 className="text-base px-8 h-12"
+                onClick={() => scrollToSection("eventos")}
               >
                 <MapPin className="mr-2 w-5 h-5" />
                 Explorar eventos

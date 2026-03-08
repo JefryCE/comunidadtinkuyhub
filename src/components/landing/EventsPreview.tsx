@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const events = [
   {
@@ -108,6 +109,7 @@ const EventsPreview = () => {
                 <Button
                   className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90"
                   size="sm"
+                  onClick={() => toast.success(`🎉 ¡Te has inscrito a "${event.title}"! (demo)`)}
                 >
                   Unirme al evento
                 </Button>
@@ -123,7 +125,7 @@ const EventsPreview = () => {
           transition={{ delay: 0.4 }}
           className="text-center mt-10"
         >
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={() => toast.info("📋 ¡Próximamente! La lista completa de eventos estará disponible pronto.")}>
             Ver todos los eventos
           </Button>
         </motion.div>
