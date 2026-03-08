@@ -44,6 +44,12 @@
     --sidebar-accent-foreground: 210 60% 15%;
     --sidebar-border: 207 40% 90%;
     --sidebar-ring: 325 99% 66%;
+
+    /* Custom tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(325, 99%, 66%), hsl(210, 75%, 34%));
+    --gradient-cta: linear-gradient(135deg, hsl(325, 99%, 60%), hsl(325, 99%, 72%));
+    --shadow-card: 0 4px 24px -4px hsl(325 99% 66% / 0.12);
+    --shadow-hero: 0 20px 60px -15px hsl(325 99% 66% / 0.25);
   }
 
   .dark {
