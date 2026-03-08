@@ -81,6 +81,7 @@
     --sidebar-border: 210 30% 18%;
     --sidebar-ring: 325 99% 66%;
   }
+}
 
 @layer utilities {
   .gradient-hero {
