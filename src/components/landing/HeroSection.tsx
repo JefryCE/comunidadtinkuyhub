@@ -50,7 +50,7 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 className="gradient-cta text-primary-foreground border-0 hover:opacity-90 shadow-hero text-base px-8 h-12"
-                onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}
+                onClick={() => navigate("/auth")}
               >
                 Únete como voluntario
                 <ArrowRight className="ml-2 w-5 h-5" />
