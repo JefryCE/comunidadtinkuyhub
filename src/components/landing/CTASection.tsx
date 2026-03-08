@@ -31,7 +31,7 @@ const CTASection = () => {
             <Button
               size="lg"
               className="gradient-cta text-primary-foreground border-0 hover:opacity-90 shadow-hero text-base px-10 h-14"
-              onClick={() => toast.info("🚀 ¡Próximamente! El registro estará disponible muy pronto.")}
+              onClick={() => navigate("/auth")}
             >
               Únete a la comunidad de voluntarios
               <ArrowRight className="ml-2 w-5 h-5" />
