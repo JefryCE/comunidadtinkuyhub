@@ -51,7 +51,7 @@ const Footer = () => {
             © 2026 TINKUYHUB. Todos los derechos reservados.
           </p>
           <p className="text-xs text-muted-foreground font-medium">
-            Desarrollado por <span className="text-gradient font-bold">TINKUYHUB</span>
+            Desarrollado por <span className="text-gradient font-bold">JEFERSON DILAS</span>
           </p>
         </div>
       </div>
