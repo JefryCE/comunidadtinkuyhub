@@ -1,7 +1,15 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const events = [
   {
@@ -13,6 +21,10 @@ const events = [
     volunteers: 34,
     max: 50,
     color: "from-secondary to-primary",
+    description:
+      "Únete a nuestra jornada de limpieza en Playa del Sol. Recogeremos residuos plásticos, vidrio y otros desechos a lo largo de 2 km de costa. Se proporcionarán guantes, bolsas y refrigerios. ¡Juntos podemos devolver la belleza a nuestras playas!",
+    schedule: "8:00 AM - 1:00 PM",
+    requirements: "Ropa cómoda, protector solar, botella reutilizable.",
   },
   {
     emoji: "🌳",
@@ -23,6 +35,10 @@ const events = [
     volunteers: 18,
     max: 30,
     color: "from-primary to-primary",
+    description:
+      "Ayúdanos a plantar más de 200 árboles nativos en zonas degradadas del Parque Nacional. Aprenderás sobre especies locales y técnicas de siembra. Ideal para familias y grupos de amigos.",
+    schedule: "7:00 AM - 12:00 PM",
+    requirements: "Botas o zapatos cerrados, ropa que se pueda ensuciar.",
   },
   {
     emoji: "🏞️",
@@ -33,11 +49,18 @@ const events = [
     volunteers: 42,
     max: 60,
     color: "from-primary to-secondary",
+    description:
+      "El Parque Central necesita un nuevo aire. Pintaremos bancas, repararemos juegos infantiles, plantaremos flores y limpiaremos senderos. Una oportunidad perfecta para impactar el corazón de la ciudad.",
+    schedule: "9:00 AM - 3:00 PM",
+    requirements: "Ropa de trabajo, muchas ganas de ayudar.",
   },
 ];
 
 const EventsPreview = () => {
+  const [selectedEvent, setSelectedEvent] = useState<typeof events[0] | null>(null);
+
   return (
+    <>
     <section id="eventos" className="py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -98,21 +121,23 @@ const EventsPreview = () => {
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="w-full bg-muted rounded-full h-2 mb-4">
-                  <div
-                    className="h-2 rounded-full gradient-hero transition-all duration-500"
-                    style={{ width: `${(event.volunteers / event.max) * 100}%` }}
-                  />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    Ver detalles
+                  </Button>
+                  <Button
+                    className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                    size="sm"
+                    onClick={() => toast.success(`🎉 ¡Te has inscrito a "${event.title}"! (demo)`)}
+                  >
+                    Unirme
+                  </Button>
                 </div>
-
-                <Button
-                  className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90"
-                  size="sm"
-                  onClick={() => toast.success(`🎉 ¡Te has inscrito a "${event.title}"! (demo)`)}
-                >
-                  Unirme al evento
-                </Button>
               </div>
             </motion.div>
           ))}
@@ -131,6 +156,53 @@ const EventsPreview = () => {
         </motion.div>
       </div>
     </section>
+
+    <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+      <DialogContent className="sm:max-w-md">
+        {selectedEvent && (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{selectedEvent.emoji}</span>
+                <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
+                  {selectedEvent.type}
+                </span>
+              </div>
+              <DialogTitle className="text-xl">{selectedEvent.title}</DialogTitle>
+              <DialogDescription>{selectedEvent.description}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{selectedEvent.location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="w-4 h-4" />
+                <span>{selectedEvent.date} • {selectedEvent.schedule}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>{selectedEvent.volunteers}/{selectedEvent.max} voluntarios</span>
+              </div>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="font-semibold text-foreground mb-1">Requisitos</p>
+                <p className="text-muted-foreground">{selectedEvent.requirements}</p>
+              </div>
+            </div>
+            <Button
+              className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 mt-2"
+              onClick={() => {
+                toast.success(`🎉 ¡Te has inscrito a "${selectedEvent.title}"! (demo)`);
+                setSelectedEvent(null);
+              }}
+            >
+              Unirme al evento
+            </Button>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
