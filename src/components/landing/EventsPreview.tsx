@@ -125,7 +125,7 @@ const EventsPreview = () => {
           transition={{ delay: 0.4 }}
           className="text-center mt-10"
         >
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={() => toast.info("📋 ¡Próximamente! La lista completa de eventos estará disponible pronto.")}>
             Ver todos los eventos
           </Button>
         </motion.div>
