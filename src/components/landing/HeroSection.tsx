@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-volunteers.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
