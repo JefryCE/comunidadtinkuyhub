@@ -435,15 +435,41 @@ const Dashboard = () => {
                           <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {ev.schedule}</span>
                           <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios</span>
                         </div>
-                        <div className="mt-2 flex gap-2">
+                        <div className="mt-2 flex flex-wrap gap-2">
                           {ev.created_by === user?.id && <Badge variant="secondary">Creado por mí</Badge>}
                           {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
                           {ev.created_by === user?.id && (
-                            <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
-                              Gestionar asistencia
-                            </Button>
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
+                                <ClipboardList className="w-3 h-3 mr-1" /> Asistencia
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingEvent(ev)}>
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline" className="text-destructive">
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta acción no se puede deshacer. Se eliminarán todas las inscripciones asociadas.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteEvent(ev.id)}>Eliminar</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
                           )}
-                          {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
                         </div>
                       </div>
                     </motion.div>
