@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, MapPin } from "lucide-react";
+import { Plus, MapPin, CalendarIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -45,7 +50,7 @@ const CreateEventDialog = () => {
   const [description, setDescription] = useState("");
   const [typeIndex, setTypeIndex] = useState<string>("");
   const [location, setLocation] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [schedule, setSchedule] = useState("");
   const [requirements, setRequirements] = useState("");
   const [maxVolunteers, setMaxVolunteers] = useState("20");
@@ -56,7 +61,7 @@ const CreateEventDialog = () => {
     setDescription("");
     setTypeIndex("");
     setLocation("");
-    setDate("");
+    setDate(undefined);
     setSchedule("");
     setRequirements("");
     setMaxVolunteers("20");
@@ -73,7 +78,7 @@ const CreateEventDialog = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !typeIndex || !location.trim() || !date.trim()) {
+    if (!title.trim() || !description.trim() || !typeIndex || !location.trim() || !date) {
       toast.error("Completa todos los campos obligatorios.");
       return;
     }
@@ -89,7 +94,7 @@ const CreateEventDialog = () => {
         emoji: eventType.emoji,
         color: eventType.color,
         location: location.trim(),
-        date: date.trim(),
+        date: date ? format(date, "d 'de' MMMM, yyyy", { locale: es }) : "",
         schedule: schedule.trim() || "Por definir",
         requirements: requirements.trim() || "Ninguno",
         max_volunteers: Number(maxVolunteers) || 20,
@@ -169,8 +174,32 @@ const CreateEventDialog = () => {
             </div>
 
             <div>
-              <Label htmlFor="ev-date">Fecha *</Label>
-              <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
+              <Label>Fecha *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={saving}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP", { locale: es }) : "Selecciona una fecha"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    disabled={(d) => d < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

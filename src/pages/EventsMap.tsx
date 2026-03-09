@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { MapPin, Navigation, Loader2, Users, CalendarDays, CheckCircle2 } from "lucide-react";
+import { MapPin, Navigation, Loader2, Users, CalendarDays, CheckCircle2, ExternalLink, Filter } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -98,6 +98,7 @@ const EventsMap = () => {
   const [geoError, setGeoError] = useState(false);
   const [locating, setLocating] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
 
   // Default: Lima, Peru
   const defaultPos: [number, number] = [-12.0464, -77.0428];
@@ -152,14 +153,22 @@ const EventsMap = () => {
   const center = userPos ?? defaultPos;
 
   const eventsWithCoords = useMemo(() => {
-    return (eventsQuery.data ?? []).map((ev) => {
+    const filtered = (eventsQuery.data ?? []).filter(
+      (ev) => activeFilter === "all" || ev.type === activeFilter
+    );
+    return filtered.map((ev) => {
       if (ev.latitude != null && ev.longitude != null) {
         return { ...ev };
       }
       const [lat, lng] = generateCoords(ev.id, center[0], center[1]);
       return { ...ev, latitude: lat, longitude: lng };
     });
-  }, [eventsQuery.data, center]);
+  }, [eventsQuery.data, center, activeFilter]);
+
+  const eventTypes = useMemo(() => {
+    const types = new Set((eventsQuery.data ?? []).map((ev) => ev.type));
+    return Array.from(types);
+  }, [eventsQuery.data]);
 
   const handleJoin = async (eventId: string) => {
     if (!user) {
@@ -214,6 +223,38 @@ const EventsMap = () => {
               Inicio
             </Button>
           </div>
+        </div>
+
+        {/* Filter bar */}
+        <div className="px-4 sm:px-6 py-2 border-b border-border bg-card/80 flex items-center gap-2 overflow-x-auto">
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Badge
+            variant={activeFilter === "all" ? "default" : "outline"}
+            className="cursor-pointer shrink-0"
+            onClick={() => setActiveFilter("all")}
+          >
+            Todos
+          </Badge>
+          {eventTypes.map((type) => {
+            const et = [
+              { value: "Limpieza", emoji: "🌊" },
+              { value: "Reforestación", emoji: "🌱" },
+              { value: "Educación", emoji: "📚" },
+              { value: "Social", emoji: "🤝" },
+              { value: "Salud", emoji: "❤️" },
+              { value: "Animales", emoji: "🐾" },
+            ].find((t) => t.value === type);
+            return (
+              <Badge
+                key={type}
+                variant={activeFilter === type ? "default" : "outline"}
+                className="cursor-pointer shrink-0"
+                onClick={() => setActiveFilter(type)}
+              >
+                {et?.emoji ?? "📌"} {type}
+              </Badge>
+            );
+          })}
         </div>
 
         {/* Map */}
@@ -279,7 +320,17 @@ const EventsMap = () => {
                           {joining === ev.id ? "Uniéndose…" : "Unirme al evento"}
                         </button>
                       )}
-                      <ShareEvent title={ev.title} description={ev.description} eventId={ev.id} size="sm" variant="ghost" />
+                      <div className="flex gap-1">
+                        <ShareEvent title={ev.title} description={ev.description} eventId={ev.id} size="sm" variant="ghost" />
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${ev.latitude},${ev.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline py-1 px-2"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Cómo llegar
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </Popup>
