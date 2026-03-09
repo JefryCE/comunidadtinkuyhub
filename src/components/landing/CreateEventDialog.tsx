@@ -174,8 +174,32 @@ const CreateEventDialog = () => {
             </div>
 
             <div>
-              <Label htmlFor="ev-date">Fecha *</Label>
-              <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
+              <Label>Fecha *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={saving}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP", { locale: es }) : "Selecciona una fecha"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    disabled={(d) => d < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
