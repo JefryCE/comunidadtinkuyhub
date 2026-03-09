@@ -70,6 +70,10 @@ const Auth = () => {
       toast.error("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+    if (!captchaToken) {
+      toast.error("Completa la verificación de seguridad");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -77,9 +81,11 @@ const Auth = () => {
       options: {
         data: { full_name: fullName },
         emailRedirectTo: window.location.origin,
+        captchaToken,
       },
     });
     setLoading(false);
+    resetCaptcha();
     if (error) {
       toast.error(error.message);
     } else {
