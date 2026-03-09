@@ -96,9 +96,24 @@ const Onboarding = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) {
+      // User not authenticated yet - save to localStorage and redirect
+      const surveyData = {
+        current_situation: situation,
+        volunteer_types: volunteerTypes,
+        frequency,
+        preferred_district: district.trim(),
+        skills,
+        wants_notifications: wantsNotifications ?? false,
+        lead_interest: leadInterest,
+      };
+      localStorage.setItem("pending_survey", JSON.stringify(surveyData));
+      toast.success("¡Encuesta guardada! Se enviará cuando confirmes tu email.");
+      navigate("/");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.from("volunteer_surveys").insert({
+    const { error } = await supabase.from("volunteer_surveys" as any).insert({
       user_id: user.id,
       current_situation: situation,
       volunteer_types: volunteerTypes,
@@ -110,6 +125,7 @@ const Onboarding = () => {
     } as any);
     setLoading(false);
     if (error) {
+      console.error("Survey insert error:", error);
       toast.error("Error al guardar tu encuesta. Intenta de nuevo.");
     } else {
       toast.success("¡Bienvenido a TinkuyHub! 🎉");
