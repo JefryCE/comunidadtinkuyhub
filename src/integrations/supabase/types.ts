@@ -35,6 +35,76 @@ export type Database = {
         }
         Relationships: []
       }
+      event_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          event_id: string
+          id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_feedback_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          event_id: string
+          id: string
+          photo_url: string
+          uploaded_by: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          photo_url: string
+          uploaded_by: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          photo_url?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_registrations: {
         Row: {
           attendance_status: string
@@ -83,6 +153,7 @@ export type Database = {
           location: string
           longitude: number | null
           max_volunteers: number
+          registration_open: boolean
           requirements: string
           schedule: string
           title: string
@@ -100,6 +171,7 @@ export type Database = {
           location: string
           longitude?: number | null
           max_volunteers: number
+          registration_open?: boolean
           requirements: string
           schedule: string
           title: string
@@ -117,6 +189,7 @@ export type Database = {
           location?: string
           longitude?: number | null
           max_volunteers?: number
+          registration_open?: boolean
           requirements?: string
           schedule?: string
           title?: string

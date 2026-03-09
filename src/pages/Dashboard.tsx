@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import {
   CalendarDays,
   ChevronLeft,
@@ -11,6 +12,10 @@ import {
   Plus,
   Users,
   MapPin,
+  Pencil,
+  Trash2,
+  Copy,
+  ClipboardList,
 } from "lucide-react";
 import {
   format,
@@ -39,6 +44,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import CreateEventDialog from "@/components/landing/CreateEventDialog";
+import EditEventDialog from "@/components/EditEventDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type EventRow = {
   id: string;
@@ -54,6 +65,8 @@ type EventRow = {
   requirements: string;
   created_at: string;
   created_by: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 type RegistrationRow = {
@@ -90,10 +103,12 @@ type ViewMode = "month" | "week" | "day";
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filter, setFilter] = useState<"all" | "created" | "joined">("all");
+  const [editingEvent, setEditingEvent] = useState<EventRow | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -196,6 +211,43 @@ const Dashboard = () => {
   const createdCount = myEvents.filter((e) => e.created_by === user?.id).length;
   const joinedCount = myEvents.filter((e) => joinedEventIds.has(e.id)).length;
   const totalCount = myEvents.length;
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase.from("events").delete().eq("id", eventId);
+      if (error) throw error;
+      toast.success("🗑️ Evento eliminado");
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al eliminar");
+    }
+  };
+
+  const handleDuplicate = async (ev: EventRow) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from("events").insert({
+        title: `${ev.title} (copia)`,
+        description: ev.description,
+        type: ev.type,
+        emoji: ev.emoji,
+        color: ev.color,
+        location: ev.location,
+        date: ev.date,
+        schedule: ev.schedule,
+        requirements: ev.requirements,
+        max_volunteers: ev.max_volunteers,
+        created_by: user.id,
+      } as any);
+      if (error) throw error;
+      toast.success("📋 Evento duplicado");
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al duplicar");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -385,15 +437,41 @@ const Dashboard = () => {
                           <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {ev.schedule}</span>
                           <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios</span>
                         </div>
-                        <div className="mt-2 flex gap-2">
+                        <div className="mt-2 flex flex-wrap gap-2">
                           {ev.created_by === user?.id && <Badge variant="secondary">Creado por mí</Badge>}
                           {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
                           {ev.created_by === user?.id && (
-                            <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
-                              Gestionar asistencia
-                            </Button>
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
+                                <ClipboardList className="w-3 h-3 mr-1" /> Asistencia
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingEvent(ev)}>
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline" className="text-destructive">
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta acción no se puede deshacer. Se eliminarán todas las inscripciones asociadas.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteEvent(ev.id)}>Eliminar</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
                           )}
-                          {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
                         </div>
                       </div>
                     </motion.div>
@@ -418,9 +496,22 @@ const Dashboard = () => {
                       <p className="font-semibold text-foreground">{ev.emoji} {ev.title}</p>
                       <p className="text-sm text-muted-foreground">{ev.location} • {ev.date}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {ev.created_by === user?.id && <Badge variant="secondary">Mío</Badge>}
                       {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
+                      {ev.created_by === user?.id && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
+                            <ClipboardList className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingEvent(ev)}>
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -429,6 +520,15 @@ const Dashboard = () => {
           );
         })()}
       </main>
+
+      {/* Edit dialog */}
+      {editingEvent && (
+        <EditEventDialog
+          event={editingEvent}
+          open={!!editingEvent}
+          onOpenChange={(open) => { if (!open) setEditingEvent(null); }}
+        />
+      )}
     </div>
   );
 };
