@@ -67,6 +67,7 @@ type EventRow = {
   created_by: string | null;
   latitude: number | null;
   longitude: number | null;
+  registration_open?: boolean;
 };
 
 type RegistrationRow = {
