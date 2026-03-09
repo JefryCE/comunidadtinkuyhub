@@ -78,6 +78,10 @@ const Navbar = () => {
                   <LayoutDashboard className="w-4 h-4 mr-1" />
                   Dashboard
                 </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/ranking")}>
+                  <Trophy className="w-4 h-4 mr-1" />
+                  Ranking
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
                   <UserRound className="w-4 h-4 mr-1" />
                   Perfil
