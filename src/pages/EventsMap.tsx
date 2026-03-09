@@ -92,9 +92,11 @@ const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
 const EventsMap = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [userPos, setUserPos] = useState<[number, number] | null>(null);
   const [geoError, setGeoError] = useState(false);
   const [locating, setLocating] = useState(true);
+  const [joining, setJoining] = useState<string | null>(null);
 
   // Default: Lima, Peru
   const defaultPos: [number, number] = [-12.0464, -77.0428];
