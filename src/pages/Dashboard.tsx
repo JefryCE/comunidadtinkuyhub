@@ -101,10 +101,12 @@ type ViewMode = "month" | "week" | "day";
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filter, setFilter] = useState<"all" | "created" | "joined">("all");
+  const [editingEvent, setEditingEvent] = useState<EventRow | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
