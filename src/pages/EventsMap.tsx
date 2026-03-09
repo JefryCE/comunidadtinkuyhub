@@ -153,14 +153,22 @@ const EventsMap = () => {
   const center = userPos ?? defaultPos;
 
   const eventsWithCoords = useMemo(() => {
-    return (eventsQuery.data ?? []).map((ev) => {
+    const filtered = (eventsQuery.data ?? []).filter(
+      (ev) => activeFilter === "all" || ev.type === activeFilter
+    );
+    return filtered.map((ev) => {
       if (ev.latitude != null && ev.longitude != null) {
         return { ...ev };
       }
       const [lat, lng] = generateCoords(ev.id, center[0], center[1]);
       return { ...ev, latitude: lat, longitude: lng };
     });
-  }, [eventsQuery.data, center]);
+  }, [eventsQuery.data, center, activeFilter]);
+
+  const eventTypes = useMemo(() => {
+    const types = new Set((eventsQuery.data ?? []).map((ev) => ev.type));
+    return Array.from(types);
+  }, [eventsQuery.data]);
 
   const handleJoin = async (eventId: string) => {
     if (!user) {
