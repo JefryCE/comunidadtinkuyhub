@@ -37,20 +37,26 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          attendance_status: string
           event_id: string
           id: string
+          points_awarded: boolean
           registered_at: string
           user_id: string
         }
         Insert: {
+          attendance_status?: string
           event_id: string
           id?: string
+          points_awarded?: boolean
           registered_at?: string
           user_id: string
         }
         Update: {
+          attendance_status?: string
           event_id?: string
           id?: string
+          points_awarded?: boolean
           registered_at?: string
           user_id?: string
         }
@@ -222,7 +228,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_event_creator: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
