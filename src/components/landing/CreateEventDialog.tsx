@@ -60,6 +60,7 @@ const CreateEventDialog = () => {
     setSchedule("");
     setRequirements("");
     setMaxVolunteers("20");
+    setCoords(null);
   };
 
   const handleOpen = () => {
