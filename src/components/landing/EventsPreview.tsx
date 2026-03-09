@@ -83,20 +83,7 @@ const EventsPreview = () => {
       if (error) throw error;
 
       toast.success(`🎉 ¡Te has inscrito a "${event.title}"!`);
-      // Award gamification points
-      try {
-        const result = await awardPointsForJoin(user.id);
-        toast(`+${result.pointsEarned} puntos 🏆`, { description: "¡Sigue participando para subir de nivel!" });
-        if (result.newBadges.length > 0) {
-          const badgeNames = result.newBadges.map((id) => BADGES.find((b) => b.id === id)).filter(Boolean);
-          badgeNames.forEach((b) => {
-            if (b) toast(`${b.emoji} ¡Nueva insignia: ${b.name}!`, { description: b.description });
-          });
-        }
-      } catch { /* gamification is non-blocking */ }
-      queryClient.invalidateQueries({ queryKey: ["gamification-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["earned-badges"] });
-      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      toast.info("⏳ Los puntos se otorgarán cuando el organizador confirme tu asistencia.", { duration: 5000 });
       queryClient.invalidateQueries({ queryKey: ["my-registrations"] });
     } catch (e: any) {
       toast.error(e?.message ?? "No se pudo completar la inscripción.");
