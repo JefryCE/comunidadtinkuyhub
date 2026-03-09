@@ -263,7 +263,7 @@ const EventsMap = () => {
                     </div>
                     <div className="mt-3">
                       {joinedIds.has(ev.id) ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Ya estás inscrito
                         </span>
                       ) : (
