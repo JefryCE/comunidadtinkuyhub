@@ -268,10 +268,11 @@ const Auth = () => {
             <div className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "login" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
               <button
-                onClick={() => {
+              onClick={() => {
                   setMode(mode === "login" ? "register" : "login");
                   setPassword("");
                   setConfirmPassword("");
+                  resetCaptcha();
                 }}
                 className="text-primary font-semibold hover:underline"
               >
