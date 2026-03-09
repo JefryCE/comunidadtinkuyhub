@@ -210,6 +210,43 @@ const Dashboard = () => {
   const joinedCount = myEvents.filter((e) => joinedEventIds.has(e.id)).length;
   const totalCount = myEvents.length;
 
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase.from("events").delete().eq("id", eventId);
+      if (error) throw error;
+      toast.success("🗑️ Evento eliminado");
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al eliminar");
+    }
+  };
+
+  const handleDuplicate = async (ev: EventRow) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from("events").insert({
+        title: `${ev.title} (copia)`,
+        description: ev.description,
+        type: ev.type,
+        emoji: ev.emoji,
+        color: ev.color,
+        location: ev.location,
+        date: ev.date,
+        schedule: ev.schedule,
+        requirements: ev.requirements,
+        max_volunteers: ev.max_volunteers,
+        created_by: user.id,
+      } as any);
+      if (error) throw error;
+      toast.success("📋 Evento duplicado");
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al duplicar");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
