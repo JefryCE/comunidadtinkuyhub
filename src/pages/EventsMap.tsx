@@ -98,6 +98,7 @@ const EventsMap = () => {
   const [geoError, setGeoError] = useState(false);
   const [locating, setLocating] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
 
   // Default: Lima, Peru
   const defaultPos: [number, number] = [-12.0464, -77.0428];
