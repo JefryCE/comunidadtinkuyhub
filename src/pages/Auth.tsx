@@ -36,9 +36,18 @@ const Auth = () => {
       toast.error("Completa todos los campos");
       return;
     }
+    if (!captchaToken) {
+      toast.error("Completa la verificación de seguridad");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    });
     setLoading(false);
+    resetCaptcha();
     if (error) {
       toast.error(error.message);
     } else {
