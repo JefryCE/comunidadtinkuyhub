@@ -56,6 +56,10 @@ const EventsPreview = () => {
   const events = eventsQuery.data ?? [];
 
   const handleJoin = async (event: EventRow) => {
+    if (event.registration_open === false) {
+      toast.error("Las inscripciones para este evento están cerradas.");
+      return;
+    }
     if (!user) {
       toast.info("Inicia sesión para inscribirte en un evento.");
       navigate("/auth");
