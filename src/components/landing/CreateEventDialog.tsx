@@ -155,20 +155,22 @@ const CreateEventDialog = () => {
               <Textarea id="ev-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="¿De qué trata el evento?" rows={3} disabled={saving} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="ev-location">Ubicación *</Label>
-                <Input id="ev-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ej: Parque Central" disabled={saving} />
+            <div>
+              <Label htmlFor="ev-location">Ubicación *</Label>
+              <Input id="ev-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ej: Parque Central" disabled={saving} />
             </div>
 
             <div>
-              <Label>Ubicación en el mapa</Label>
+              <Label className="flex items-center gap-1.5 mb-1.5">
+                <MapPin className="w-3.5 h-3.5 text-primary" />
+                Selecciona en el mapa
+              </Label>
               <LocationPicker value={coords} onChange={setCoords} />
             </div>
-              <div>
-                <Label htmlFor="ev-date">Fecha *</Label>
-                <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
-              </div>
+
+            <div>
+              <Label htmlFor="ev-date">Fecha *</Label>
+              <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
