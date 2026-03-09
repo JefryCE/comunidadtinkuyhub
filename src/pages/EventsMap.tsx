@@ -331,6 +331,7 @@ const EventsMap = () => {
                           <ExternalLink className="w-3 h-3" /> Cómo llegar
                         </a>
                       </div>
+                    </div>
                   </div>
                 </Popup>
               </Marker>
