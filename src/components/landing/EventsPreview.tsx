@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import CreateEventDialog from "./CreateEventDialog";
 
 type EventRow = {
   id: string;
@@ -107,9 +108,10 @@ const EventsPreview = () => {
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
               Eventos que te esperan
             </h2>
-            <p className="text-muted-foreground max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
               Encuentra actividades de voluntariado cerca de ti y únete a la comunidad.
             </p>
+            <CreateEventDialog />
           </motion.div>
 
           {eventsQuery.isLoading ? (
