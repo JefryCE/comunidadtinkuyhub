@@ -320,8 +320,17 @@ const EventsMap = () => {
                           {joining === ev.id ? "Uniéndose…" : "Unirme al evento"}
                         </button>
                       )}
-                      <ShareEvent title={ev.title} description={ev.description} eventId={ev.id} size="sm" variant="ghost" />
-                    </div>
+                      <div className="flex gap-1">
+                        <ShareEvent title={ev.title} description={ev.description} eventId={ev.id} size="sm" variant="ghost" />
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${ev.latitude},${ev.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline py-1 px-2"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Cómo llegar
+                        </a>
+                      </div>
                   </div>
                 </Popup>
               </Marker>
