@@ -41,6 +41,8 @@ type RegistrationRow = {
   event_id: string;
   user_id: string;
   registered_at: string;
+  attendance_status: string;
+  points_awarded: boolean;
 };
 
 const getInitials = (nameOrEmail?: string | null) => {
@@ -112,7 +114,7 @@ const Profile = () => {
 
       const { data: regs, error: regsError } = await supabase
         .from("event_registrations")
-        .select("id, event_id, user_id, registered_at")
+        .select("id, event_id, user_id, registered_at, attendance_status, points_awarded")
         .order("registered_at", { ascending: false });
 
       if (regsError) throw regsError;
@@ -348,9 +350,20 @@ const Profile = () => {
                             {event ? `${event.location} • ${event.date}` : `ID: ${registration.event_id}`}
                           </p>
                         </div>
-                        <p className="text-xs text-muted-foreground whitespace-nowrap">
-                          Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
-                        </p>
+                        <div className="flex flex-col items-end gap-1">
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">
+                            Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
+                          </p>
+                          {registration.attendance_status === "confirmed" && (
+                            <span className="text-xs font-medium text-green-600 flex items-center gap-1">✅ Asistencia confirmada</span>
+                          )}
+                          {registration.attendance_status === "no_show" && (
+                            <span className="text-xs font-medium text-destructive flex items-center gap-1">❌ No asistió</span>
+                          )}
+                          {registration.attendance_status === "pending" && (
+                            <span className="text-xs font-medium text-yellow-600 flex items-center gap-1">⏳ Pendiente</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))

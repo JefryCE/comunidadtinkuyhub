@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import EventsMap from "./pages/EventsMap";
 import NotFound from "./pages/NotFound";
 import Leaderboard from "./pages/Leaderboard";
+import ManageAttendance from "./pages/ManageAttendance";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/eventos" element={<EventsMap />} />
             <Route path="/ranking" element={<Leaderboard />} />
+            <Route path="/evento/:eventId/asistencia" element={<ManageAttendance />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

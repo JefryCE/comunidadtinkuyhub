@@ -221,3 +221,28 @@ export const awardPointsForJoin = async (userId: string) => {
 
   return { pointsEarned, newBadges, stats };
 };
+
+// ─── CONFIRM ATTENDANCE (organizer confirms volunteer attended) ───
+
+export const confirmAttendance = async (registrationId: string, volunteerId: string) => {
+  // Mark registration as confirmed
+  const { error: updateError } = await supabase
+    .from("event_registrations")
+    .update({ attendance_status: "confirmed", points_awarded: true })
+    .eq("id", registrationId);
+
+  if (updateError) throw updateError;
+
+  // Award points now that attendance is confirmed
+  const result = await awardPointsForJoin(volunteerId);
+  return result;
+};
+
+export const markNoShow = async (registrationId: string) => {
+  const { error } = await supabase
+    .from("event_registrations")
+    .update({ attendance_status: "no_show" })
+    .eq("id", registrationId);
+
+  if (error) throw error;
+};

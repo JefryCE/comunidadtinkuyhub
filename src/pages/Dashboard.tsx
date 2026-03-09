@@ -388,6 +388,12 @@ const Dashboard = () => {
                         <div className="mt-2 flex gap-2">
                           {ev.created_by === user?.id && <Badge variant="secondary">Creado por mí</Badge>}
                           {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
+                          {ev.created_by === user?.id && (
+                            <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
+                              Gestionar asistencia
+                            </Button>
+                          )}
+                          {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
                         </div>
                       </div>
                     </motion.div>
