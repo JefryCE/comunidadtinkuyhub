@@ -222,7 +222,7 @@ const Dashboard = () => {
             className="bg-card border border-border rounded-2xl p-5 shadow-card"
           >
             <p className="text-sm text-muted-foreground">Total eventos</p>
-            <p className="text-3xl font-bold text-foreground">{(eventsQuery.data ?? []).length}</p>
+            <p className="text-3xl font-bold text-foreground">{totalCount}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
