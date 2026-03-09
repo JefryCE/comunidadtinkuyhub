@@ -70,8 +70,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}
-                >
+                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="w-4 h-4 mr-1" />
+                  Dashboard
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
                   <UserRound className="w-4 h-4 mr-1" />
                   Perfil
                 </Button>
