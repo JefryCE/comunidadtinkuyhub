@@ -242,9 +242,21 @@ const Auth = () => {
                 </div>
               )}
 
+              {mode !== "forgot" && (
+                <div className="flex justify-center">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{ theme: "light", size: "normal" }}
+                  />
+                </div>
+              )}
+
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode !== "forgot" && !captchaToken)}
                 className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11"
               >
                 {loading ? "Cargando..." : mode === "login" ? "Iniciar sesión" : mode === "register" ? "Crear cuenta" : "Enviar enlace"}
