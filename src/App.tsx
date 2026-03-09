@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import EventsMap from "./pages/EventsMap";
 import NotFound from "./pages/NotFound";
 import Leaderboard from "./pages/Leaderboard";
+import ManageAttendance from "./pages/ManageAttendance";
 
 const queryClient = new QueryClient();
 
