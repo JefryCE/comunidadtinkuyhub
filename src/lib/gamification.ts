@@ -18,8 +18,8 @@ export const LEVELS = [
   { name: "Leyenda", emoji: "⭐", minPoints: 2000, color: "from-violet-400 to-purple-500" },
 ] as const;
 
-export const getLevel = (points: number) => {
-  let current = LEVELS[0];
+export const getLevel = (points: number): typeof LEVELS[number] => {
+  let current: typeof LEVELS[number] = LEVELS[0];
   for (const level of LEVELS) {
     if (points >= level.minPoints) current = level;
     else break;
@@ -27,7 +27,7 @@ export const getLevel = (points: number) => {
   return current;
 };
 
-export const getNextLevel = (points: number) => {
+export const getNextLevel = (points: number): typeof LEVELS[number] | null => {
   for (const level of LEVELS) {
     if (points < level.minPoints) return level;
   }
