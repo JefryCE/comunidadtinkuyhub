@@ -350,9 +350,20 @@ const Profile = () => {
                             {event ? `${event.location} • ${event.date}` : `ID: ${registration.event_id}`}
                           </p>
                         </div>
-                        <p className="text-xs text-muted-foreground whitespace-nowrap">
-                          Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
-                        </p>
+                        <div className="flex flex-col items-end gap-1">
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">
+                            Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
+                          </p>
+                          {registration.attendance_status === "confirmed" && (
+                            <span className="text-xs font-medium text-green-600 flex items-center gap-1">✅ Asistencia confirmada</span>
+                          )}
+                          {registration.attendance_status === "no_show" && (
+                            <span className="text-xs font-medium text-destructive flex items-center gap-1">❌ No asistió</span>
+                          )}
+                          {registration.attendance_status === "pending" && (
+                            <span className="text-xs font-medium text-yellow-600 flex items-center gap-1">⏳ Pendiente</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
