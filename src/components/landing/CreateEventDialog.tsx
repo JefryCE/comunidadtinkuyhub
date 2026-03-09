@@ -49,6 +49,7 @@ const CreateEventDialog = () => {
   const [schedule, setSchedule] = useState("");
   const [requirements, setRequirements] = useState("");
   const [maxVolunteers, setMaxVolunteers] = useState("20");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const resetForm = () => {
     setTitle("");
