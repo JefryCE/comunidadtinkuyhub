@@ -140,6 +140,18 @@ const Navbar = () => {
                       className="w-full justify-center"
                       onClick={() => {
                         setMobileOpen(false);
+                        navigate("/eventos");
+                      }}
+                    >
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Mapa
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
                         navigate("/dashboard");
                       }}
                     >
