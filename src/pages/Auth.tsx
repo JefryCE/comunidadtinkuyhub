@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { Leaf, Mail, Lock, User, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
