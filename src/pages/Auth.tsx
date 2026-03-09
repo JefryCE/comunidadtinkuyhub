@@ -113,6 +113,62 @@ const Auth = () => {
     }
   };
 
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-3xl -z-10" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md text-center"
+        >
+          <div className="mb-6">
+            <button onClick={() => navigate("/")} className="inline-flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl gradient-hero flex items-center justify-center">
+                <Leaf className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="text-2xl font-bold text-foreground">TINKUYHUB</span>
+            </button>
+          </div>
+          <div className="bg-card rounded-2xl border border-border shadow-card p-8">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground mb-2">¡Cuenta creada con éxito!</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              Hemos enviado un enlace de confirmación a:
+            </p>
+            <p className="text-sm font-semibold text-foreground bg-muted rounded-lg px-4 py-2 mb-4">
+              {registeredEmail}
+            </p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta. Luego podrás iniciar sesión.
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  setRegisteredEmail(null);
+                  setMode("login");
+                }}
+                className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Ya confirmé, ir a iniciar sesión
+              </Button>
+              <button
+                onClick={() => navigate("/onboarding")}
+                className="text-sm text-primary hover:underline"
+              >
+                Mientras tanto, completar encuesta de bienvenida →
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
       {/* Background decoration */}
