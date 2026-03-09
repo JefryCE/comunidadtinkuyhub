@@ -59,9 +59,9 @@ const CreateEventDialog = () => {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    sundefinedTypeIndex("");
-    setLundefinedation("");
-    setDate("");
+    setTypeIndex("");
+    setLocation("");
+    setDate(undefined);
     setSchedule("");
     setRequirements("");
     setMaxVolunteers("20");
