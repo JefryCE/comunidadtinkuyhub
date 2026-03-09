@@ -125,12 +125,17 @@ const Dashboard = () => {
 
   const joinedEventIds = useMemo(() => new Set((regsQuery.data ?? []).map((r) => r.event_id)), [regsQuery.data]);
 
-  const events = useMemo(() => {
+  // Only show events the user created or joined
+  const myEvents = useMemo(() => {
     const all = eventsQuery.data ?? [];
-    if (filter === "created") return all.filter((e) => e.created_by === user?.id);
-    if (filter === "joined") return all.filter((e) => joinedEventIds.has(e.id));
-    return all;
-  }, [eventsQuery.data, filter, user?.id, joinedEventIds]);
+    return all.filter((e) => e.created_by === user?.id || joinedEventIds.has(e.id));
+  }, [eventsQuery.data, user?.id, joinedEventIds]);
+
+  const events = useMemo(() => {
+    if (filter === "created") return myEvents.filter((e) => e.created_by === user?.id);
+    if (filter === "joined") return myEvents.filter((e) => joinedEventIds.has(e.id));
+    return myEvents;
+  }, [myEvents, filter, user?.id, joinedEventIds]);
 
   // Build parsed date map
   const eventsByDate = useMemo(() => {
