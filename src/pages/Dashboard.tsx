@@ -494,9 +494,22 @@ const Dashboard = () => {
                       <p className="font-semibold text-foreground">{ev.emoji} {ev.title}</p>
                       <p className="text-sm text-muted-foreground">{ev.location} • {ev.date}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {ev.created_by === user?.id && <Badge variant="secondary">Mío</Badge>}
                       {joinedEventIds.has(ev.id) && <Badge variant="outline">Inscrito</Badge>}
+                      {ev.created_by === user?.id && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
+                            <ClipboardList className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingEvent(ev)}>
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -505,6 +518,15 @@ const Dashboard = () => {
           );
         })()}
       </main>
+
+      {/* Edit dialog */}
+      {editingEvent && (
+        <EditEventDialog
+          event={editingEvent}
+          open={!!editingEvent}
+          onOpenChange={(open) => { if (!open) setEditingEvent(null); }}
+        />
+      )}
     </div>
   );
 };
