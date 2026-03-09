@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import CreateEventDialog from "./CreateEventDialog";
 
 type EventRow = {
   id: string;
