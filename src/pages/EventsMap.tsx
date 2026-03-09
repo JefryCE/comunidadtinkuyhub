@@ -225,6 +225,38 @@ const EventsMap = () => {
           </div>
         </div>
 
+        {/* Filter bar */}
+        <div className="px-4 sm:px-6 py-2 border-b border-border bg-card/80 flex items-center gap-2 overflow-x-auto">
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Badge
+            variant={activeFilter === "all" ? "default" : "outline"}
+            className="cursor-pointer shrink-0"
+            onClick={() => setActiveFilter("all")}
+          >
+            Todos
+          </Badge>
+          {eventTypes.map((type) => {
+            const et = [
+              { value: "Limpieza", emoji: "🌊" },
+              { value: "Reforestación", emoji: "🌱" },
+              { value: "Educación", emoji: "📚" },
+              { value: "Social", emoji: "🤝" },
+              { value: "Salud", emoji: "❤️" },
+              { value: "Animales", emoji: "🐾" },
+            ].find((t) => t.value === type);
+            return (
+              <Badge
+                key={type}
+                variant={activeFilter === type ? "default" : "outline"}
+                className="cursor-pointer shrink-0"
+                onClick={() => setActiveFilter(type)}
+              >
+                {et?.emoji ?? "📌"} {type}
+              </Badge>
+            );
+          })}
+        </div>
+
         {/* Map */}
         <div className="flex-1 relative">
           <MapContainer
