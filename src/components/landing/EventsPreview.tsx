@@ -168,10 +168,10 @@ const EventsPreview = () => {
                       <Button
                         className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
                         size="sm"
-                        disabled={joining === event.id}
+                        disabled={joining === event.id || event.registration_open === false}
                         onClick={() => handleJoin(event)}
                       >
-                        {joining === event.id ? "Inscribiendo..." : "Unirme"}
+                        {event.registration_open === false ? "🔒 Cerrado" : joining === event.id ? "Inscribiendo..." : "Unirme"}
                       </Button>
                       <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
                     </div>
