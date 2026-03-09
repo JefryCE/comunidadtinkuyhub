@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LocationPicker from "@/components/LocationPicker";
 
 const EVENT_TYPES = [
   { value: "Limpieza", emoji: "🌊", color: "from-cyan-400 to-blue-500" },
@@ -48,6 +49,7 @@ const CreateEventDialog = () => {
   const [schedule, setSchedule] = useState("");
   const [requirements, setRequirements] = useState("");
   const [maxVolunteers, setMaxVolunteers] = useState("20");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const resetForm = () => {
     setTitle("");
@@ -58,6 +60,7 @@ const CreateEventDialog = () => {
     setSchedule("");
     setRequirements("");
     setMaxVolunteers("20");
+    setCoords(null);
   };
 
   const handleOpen = () => {
@@ -91,6 +94,8 @@ const CreateEventDialog = () => {
         requirements: requirements.trim() || "Ninguno",
         max_volunteers: Number(maxVolunteers) || 20,
         created_by: user!.id,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
       } as any);
 
       if (error) throw error;
@@ -154,7 +159,12 @@ const CreateEventDialog = () => {
               <div>
                 <Label htmlFor="ev-location">Ubicación *</Label>
                 <Input id="ev-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ej: Parque Central" disabled={saving} />
-              </div>
+            </div>
+
+            <div>
+              <Label>Ubicación en el mapa</Label>
+              <LocationPicker value={coords} onChange={setCoords} />
+            </div>
               <div>
                 <Label htmlFor="ev-date">Fecha *</Label>
                 <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
