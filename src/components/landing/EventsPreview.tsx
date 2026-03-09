@@ -29,8 +29,14 @@ type EventRow = {
   registration_open?: boolean;
 };
 
+const EVENT_TYPES = ["Limpieza", "Reforestación", "Educación", "Social", "Salud", "Animales"];
+const TYPE_EMOJIS: Record<string, string> = {
+  Limpieza: "🌊", Reforestación: "🌱", Educación: "📚", Social: "🤝", Salud: "❤️", Animales: "🐾",
+};
+
 const EventsPreview = () => {
-  const [selectedEvent, setSelectedEvent] = useState<EventRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [joining, setJoining] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
