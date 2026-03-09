@@ -42,7 +42,7 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-lg overflow-hidden border border-border" style={{ height: 220 }}>
+      <div className="rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 280 }}>
         <MapContainer
           center={center}
           zoom={13}
@@ -59,11 +59,12 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
         </MapContainer>
       </div>
       {value ? (
-        <p className="text-xs text-muted-foreground">
-          📍 {value.lat.toFixed(5)}, {value.lng.toFixed(5)}
-        </p>
+        <div className="flex items-center gap-2 text-xs text-primary font-medium bg-primary/10 rounded-lg px-3 py-2">
+          <span>📍</span>
+          <span>{value.lat.toFixed(5)}, {value.lng.toFixed(5)}</span>
+        </div>
       ) : (
-        <p className="text-xs text-muted-foreground">Haz clic en el mapa para seleccionar la ubicación</p>
+        <p className="text-xs text-muted-foreground italic">Haz clic en el mapa para seleccionar la ubicación del evento</p>
       )}
     </div>
   );
