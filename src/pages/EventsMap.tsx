@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ShareEvent from "@/components/ShareEvent";
+import { awardPointsForJoin, BADGES } from "@/lib/gamification";
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -182,6 +183,20 @@ const EventsMap = () => {
         .insert({ event_id: eventId, user_id: user.id });
       if (error) throw error;
       toast.success("¡Te uniste al evento! 🎉");
+      // Award gamification points
+      try {
+        const result = await awardPointsForJoin(user.id);
+        toast(`+${result.pointsEarned} puntos 🏆`, { description: "¡Sigue participando para subir de nivel!" });
+        if (result.newBadges.length > 0) {
+          const badgeNames = result.newBadges.map((id) => BADGES.find((b) => b.id === id)).filter(Boolean);
+          badgeNames.forEach((b) => {
+            if (b) toast(`${b.emoji} ¡Nueva insignia: ${b.name}!`, { description: b.description });
+          });
+        }
+      } catch { /* gamification is non-blocking */ }
+      queryClient.invalidateQueries({ queryKey: ["gamification-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["earned-badges"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
       queryClient.invalidateQueries({ queryKey: ["map-registrations"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-registrations"] });
       queryClient.invalidateQueries({ queryKey: ["my-registrations"] });

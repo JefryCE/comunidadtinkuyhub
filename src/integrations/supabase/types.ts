@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      earned_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           event_id: string
@@ -94,6 +115,42 @@ export type Database = {
           schedule?: string
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      gamification_profiles: {
+        Row: {
+          created_at: string
+          current_streak: number
+          events_completed: number
+          id: string
+          last_event_date: string | null
+          longest_streak: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          events_completed?: number
+          id?: string
+          last_event_date?: string | null
+          longest_streak?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          events_completed?: number
+          id?: string
+          last_event_date?: string | null
+          longest_streak?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

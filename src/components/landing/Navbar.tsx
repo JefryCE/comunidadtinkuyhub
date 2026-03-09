@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X, LogOut, UserRound, LayoutDashboard, MapPin } from "lucide-react";
+import { Leaf, Menu, X, LogOut, UserRound, LayoutDashboard, MapPin, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -77,6 +77,10 @@ const Navbar = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
                   <LayoutDashboard className="w-4 h-4 mr-1" />
                   Dashboard
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/ranking")}>
+                  <Trophy className="w-4 h-4 mr-1" />
+                  Ranking
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
                   <UserRound className="w-4 h-4 mr-1" />
@@ -157,6 +161,18 @@ const Navbar = () => {
                     >
                       <LayoutDashboard className="w-4 h-4 mr-1" />
                       Dashboard
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/ranking");
+                      }}
+                    >
+                      <Trophy className="w-4 h-4 mr-1" />
+                      Ranking
                     </Button>
                     <Button
                       variant="ghost"

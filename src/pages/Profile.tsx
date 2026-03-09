@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import GamificationStats from "@/components/GamificationStats";
 
 type ProfileRow = {
   id: string;
@@ -263,6 +264,8 @@ const Profile = () => {
           </section>
 
           <section className="lg:col-span-2 space-y-8">
+            {/* Gamification */}
+            <GamificationStats />
             <div className="bg-card border border-border rounded-2xl shadow-card p-6">
               <h2 className="text-xl font-bold text-card-foreground">Datos</h2>
               <div className="mt-5 grid sm:grid-cols-2 gap-4">
