@@ -1,20 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { MapPin, Calendar, Users, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import CreateEventDialog from "./CreateEventDialog";
 import ShareEvent from "@/components/ShareEvent";
 
@@ -34,8 +29,14 @@ type EventRow = {
   registration_open?: boolean;
 };
 
+const EVENT_TYPES = ["Limpieza", "Reforestación", "Educación", "Social", "Salud", "Animales"];
+const TYPE_EMOJIS: Record<string, string> = {
+  Limpieza: "🌊", Reforestación: "🌱", Educación: "📚", Social: "🤝", Salud: "❤️", Animales: "🐾",
+};
+
 const EventsPreview = () => {
-  const [selectedEvent, setSelectedEvent] = useState<EventRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [joining, setJoining] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -53,7 +54,24 @@ const EventsPreview = () => {
     },
   });
 
-  const events = eventsQuery.data ?? [];
+  const allEvents = eventsQuery.data ?? [];
+
+  const filteredEvents = useMemo(() => {
+    let result = allEvents;
+    if (typeFilter !== "all") {
+      result = result.filter((e) => e.type === typeFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.location.toLowerCase().includes(q) ||
+          e.description.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [allEvents, typeFilter, searchQuery]);
 
   const handleJoin = async (event: EventRow) => {
     if (event.registration_open === false) {
@@ -68,7 +86,6 @@ const EventsPreview = () => {
 
     setJoining(event.id);
     try {
-      // Check if already registered
       const { data: existing } = await supabase
         .from("event_registrations")
         .select("id")
@@ -94,154 +111,145 @@ const EventsPreview = () => {
       toast.error(e?.message ?? "No se pudo completar la inscripción.");
     } finally {
       setJoining(null);
-      setSelectedEvent(null);
     }
   };
 
   return (
-    <>
-      <section id="eventos" className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              Próximos eventos
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
-              Eventos que te esperan
-            </h2>
-            <p className="text-muted-foreground max-w-md mx-auto mb-6">
-              Encuentra actividades de voluntariado cerca de ti y únete a la comunidad.
-            </p>
-            <CreateEventDialog />
-          </motion.div>
+    <section id="eventos" className="py-20 lg:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
+          <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
+            Próximos eventos
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
+            Eventos que te esperan
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
+            Encuentra actividades de voluntariado cerca de ti y únete a la comunidad.
+          </p>
+          <CreateEventDialog />
+        </motion.div>
 
-          {eventsQuery.isLoading ? (
-            <p className="text-center text-muted-foreground">Cargando eventos...</p>
-          ) : events.length === 0 ? (
-            <p className="text-center text-muted-foreground">No hay eventos disponibles por el momento.</p>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-6">
-              {events.map((event, index) => (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-hero transition-all duration-300 group"
-                >
-                  <div className={`h-2 bg-gradient-to-r ${event.color}`} />
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-2xl">{event.emoji}</span>
-                      <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
-                        {event.type}
-                      </span>
+        {/* Search & Filters */}
+        <div className="mb-8 space-y-4">
+          <div className="relative max-w-md mx-auto">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, ubicación..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex justify-center gap-2 flex-wrap">
+            <Badge
+              variant={typeFilter === "all" ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => setTypeFilter("all")}
+            >
+              Todos
+            </Badge>
+            {EVENT_TYPES.map((type) => (
+              <Badge
+                key={type}
+                variant={typeFilter === type ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => setTypeFilter(type)}
+              >
+                {TYPE_EMOJIS[type]} {type}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        {eventsQuery.isLoading ? (
+          <p className="text-center text-muted-foreground">Cargando eventos...</p>
+        ) : filteredEvents.length === 0 ? (
+          <p className="text-center text-muted-foreground">
+            {searchQuery || typeFilter !== "all"
+              ? "No se encontraron eventos con esos filtros."
+              : "No hay eventos disponibles por el momento."}
+          </p>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-6">
+            {filteredEvents.map((event, index) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-hero transition-all duration-300 group"
+              >
+                <div className={`h-2 bg-gradient-to-r ${event.color}`} />
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-2xl">{event.emoji}</span>
+                    <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
+                      {event.type}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-card-foreground mb-3 group-hover:text-primary transition-colors">
+                    {event.title}
+                  </h3>
+                  <div className="space-y-2 mb-5">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      <span>{event.location}</span>
                     </div>
-                    <h3 className="text-lg font-bold text-card-foreground mb-3 group-hover:text-primary transition-colors">
-                      {event.title}
-                    </h3>
-                    <div className="space-y-2 mb-5">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        <span>{event.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span>{event.date}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Users className="w-4 h-4" />
-                        <span>{event.max_volunteers} voluntarios máx.</span>
-                      </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span>{event.date}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedEvent(event)}>
-                        Ver detalles
-                      </Button>
-                      <Button
-                        className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
-                        size="sm"
-                        disabled={joining === event.id || event.registration_open === false}
-                        onClick={() => handleJoin(event)}
-                      >
-                        {event.registration_open === false ? "🔒 Cerrado" : joining === event.id ? "Inscribiendo..." : "Unirme"}
-                      </Button>
-                      <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>{event.max_volunteers} voluntarios máx.</span>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/evento/${event.id}`)}
+                    >
+                      Ver detalles
+                    </Button>
+                    <Button
+                      className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                      size="sm"
+                      disabled={joining === event.id || event.registration_open === false}
+                      onClick={() => handleJoin(event)}
+                    >
+                      {event.registration_open === false ? "🔒 Cerrado" : joining === event.id ? "Inscribiendo..." : "Unirme"}
+                    </Button>
+                    <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-            className="text-center mt-10"
-          >
-            <Button variant="outline" size="lg" onClick={() => toast.info("📋 ¡Próximamente! La lista completa de eventos estará disponible pronto.")}>
-              Ver todos los eventos
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="sm:max-w-md">
-          {selectedEvent && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">{selectedEvent.emoji}</span>
-                  <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
-                    {selectedEvent.type}
-                  </span>
-                </div>
-                <DialogTitle className="text-xl">{selectedEvent.title}</DialogTitle>
-                <DialogDescription>{selectedEvent.description}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  <span>{selectedEvent.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span>{selectedEvent.date} • {selectedEvent.schedule}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>{selectedEvent.max_volunteers} voluntarios máx.</span>
-                </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <p className="font-semibold text-foreground mb-1">Requisitos</p>
-                  <p className="text-muted-foreground">{selectedEvent.requirements}</p>
-                </div>
-              </div>
-              <div className="flex gap-2 mt-2">
-                <Button
-                  className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
-                  disabled={joining === selectedEvent.id}
-                  onClick={() => handleJoin(selectedEvent)}
-                >
-                  {joining === selectedEvent.id ? "Inscribiendo..." : "Unirme al evento"}
-                </Button>
-                <ShareEvent title={selectedEvent.title} description={selectedEvent.description} eventId={selectedEvent.id} />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="text-center mt-10"
+        >
+          <Button variant="outline" size="lg" onClick={() => navigate("/eventos")}>
+            Ver todos en el mapa
+          </Button>
+        </motion.div>
+      </div>
+    </section>
   );
 };
 

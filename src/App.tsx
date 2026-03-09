@@ -10,6 +10,7 @@ import Onboarding from "./pages/Onboarding";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import EventsMap from "./pages/EventsMap";
+import EventDetail from "./pages/EventDetail";
 import NotFound from "./pages/NotFound";
 import Leaderboard from "./pages/Leaderboard";
 import ManageAttendance from "./pages/ManageAttendance";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/eventos" element={<EventsMap />} />
+            <Route path="/evento/:eventId" element={<EventDetail />} />
             <Route path="/ranking" element={<Leaderboard />} />
             <Route path="/evento/:eventId/asistencia" element={<ManageAttendance />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

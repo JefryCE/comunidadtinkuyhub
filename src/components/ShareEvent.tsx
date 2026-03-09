@@ -26,7 +26,7 @@ const ShareEvent = ({
 }: ShareEventProps) => {
   const [copied, setCopied] = useState(false);
 
-  const eventUrl = `${window.location.origin}/#evento-${eventId}`;
+  const eventUrl = `${window.location.origin}/evento/${eventId}`;
   const text = `¡Únete al evento "${title}"! ${description}`.trim();
   const encodedText = encodeURIComponent(text);
   const encodedUrl = encodeURIComponent(eventUrl);

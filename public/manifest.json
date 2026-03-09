@@ -1,0 +1,17 @@
+{
+  "name": "TinkuyHub - Voluntariado Comunitario",
+  "short_name": "TinkuyHub",
+  "description": "Plataforma de voluntariado comunitario. Encuentra eventos, únete y transforma tu comunidad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#e63a93",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
