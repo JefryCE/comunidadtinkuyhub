@@ -115,6 +115,45 @@ export type Database = {
         }
         Relationships: []
       }
+      volunteer_surveys: {
+        Row: {
+          created_at: string
+          current_situation: string | null
+          frequency: string | null
+          id: string
+          lead_interest: string | null
+          preferred_district: string | null
+          skills: string[] | null
+          user_id: string
+          volunteer_types: string[] | null
+          wants_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          current_situation?: string | null
+          frequency?: string | null
+          id?: string
+          lead_interest?: string | null
+          preferred_district?: string | null
+          skills?: string[] | null
+          user_id: string
+          volunteer_types?: string[] | null
+          wants_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          current_situation?: string | null
+          frequency?: string | null
+          id?: string
+          lead_interest?: string | null
+          preferred_district?: string | null
+          skills?: string[] | null
+          user_id?: string
+          volunteer_types?: string[] | null
+          wants_notifications?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
