@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { MapPin, Navigation, Loader2, Users, CalendarDays } from "lucide-react";
+import { MapPin, Navigation, Loader2, Users, CalendarDays, CheckCircle2 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { toast } from "sonner";
 
 import Navbar from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
@@ -91,9 +92,11 @@ const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
 const EventsMap = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [userPos, setUserPos] = useState<[number, number] | null>(null);
   const [geoError, setGeoError] = useState(false);
   const [locating, setLocating] = useState(true);
+  const [joining, setJoining] = useState<string | null>(null);
 
   // Default: Lima, Peru
   const defaultPos: [number, number] = [-12.0464, -77.0428];
@@ -129,6 +132,22 @@ const EventsMap = () => {
     },
   });
 
+  // Fetch user registrations
+  const regsQuery = useQuery({
+    queryKey: ["map-registrations", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select("event_id")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.event_id));
+    },
+  });
+
+  const joinedIds = regsQuery.data ?? new Set<string>();
+
   const center = userPos ?? defaultPos;
 
   const eventsWithCoords = useMemo(() => {
@@ -137,6 +156,32 @@ const EventsMap = () => {
       return { ...ev, latitude: lat, longitude: lng };
     });
   }, [eventsQuery.data, center]);
+
+  const handleJoin = async (eventId: string) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setJoining(eventId);
+    try {
+      const { error } = await supabase
+        .from("event_registrations")
+        .insert({ event_id: eventId, user_id: user.id });
+      if (error) throw error;
+      toast.success("¡Te uniste al evento! 🎉");
+      queryClient.invalidateQueries({ queryKey: ["map-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["my-registrations"] });
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        toast.info("Ya estás inscrito en este evento");
+      } else {
+        toast.error("Error al unirse: " + err.message);
+      }
+    } finally {
+      setJoining(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -200,7 +245,7 @@ const EventsMap = () => {
                 icon={eventIcon}
               >
                 <Popup>
-                  <div className="min-w-[200px]">
+                  <div className="min-w-[220px]">
                     <p className="font-bold text-sm">
                       {ev.emoji} {ev.title}
                     </p>
@@ -215,6 +260,21 @@ const EventsMap = () => {
                       <p className="flex items-center gap-1">
                         <Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios
                       </p>
+                    </div>
+                    <div className="mt-3">
+                      {joinedIds.has(ev.id) ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Ya estás inscrito
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleJoin(ev.id)}
+                          disabled={joining === ev.id}
+                          className="w-full text-xs font-semibold py-1.5 px-3 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                        >
+                          {joining === ev.id ? "Uniéndose…" : "Unirme al evento"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </Popup>
