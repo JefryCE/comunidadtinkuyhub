@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import {
   CalendarDays,
   ChevronLeft,
@@ -11,6 +12,10 @@ import {
   Plus,
   Users,
   MapPin,
+  Pencil,
+  Trash2,
+  Copy,
+  ClipboardList,
 } from "lucide-react";
 import {
   format,
