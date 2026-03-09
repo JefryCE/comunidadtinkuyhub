@@ -114,7 +114,7 @@ const Profile = () => {
 
       const { data: regs, error: regsError } = await supabase
         .from("event_registrations")
-        .select("id, event_id, user_id, registered_at")
+        .select("id, event_id, user_id, registered_at, attendance_status, points_awarded")
         .order("registered_at", { ascending: false });
 
       if (regsError) throw regsError;
