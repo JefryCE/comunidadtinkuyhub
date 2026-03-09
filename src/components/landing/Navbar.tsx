@@ -112,6 +112,12 @@ const Navbar = () => {
                 >
                   Únete gratis
                 </Button>
+                <ThemeToggle />
+                  className="gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                  onClick={() => navigate("/auth")}
+                >
+                  Únete gratis
+                </Button>
               </>
             )}
           </div>
