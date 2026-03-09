@@ -1,18 +1,29 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X, LogOut } from "lucide-react";
+import { Leaf, Menu, X, LogOut, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const scrollToSection = (id: string) => {
     setMobileOpen(false);
+
+    // Si no estamos en la landing, primero navegamos al home y luego hacemos scroll.
+    if (location.pathname !== "/") {
+      navigate("/");
+      window.setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }, 60);
+      return;
+    }
+
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -59,6 +70,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}
+                >
+                  <UserRound className="w-4 h-4 mr-1" />
+                  Perfil
+                </Button>
                 <span className="text-sm text-muted-foreground">
                   {user.user_metadata?.full_name || user.email}
                 </span>
@@ -83,10 +99,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <button
-            className="md:hidden text-foreground"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
+          <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -113,16 +126,45 @@ const Navbar = () => {
               ))}
               <div className="pt-3 border-t border-border space-y-2">
                 {user ? (
-                  <Button variant="ghost" size="sm" className="w-full justify-center" onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-1" />
-                    Cerrar sesión
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/profile");
+                      }}
+                    >
+                      <UserRound className="w-4 h-4 mr-1" />
+                      Mi perfil
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-center" onClick={handleSignOut}>
+                      <LogOut className="w-4 h-4 mr-1" />
+                      Cerrar sesión
+                    </Button>
+                  </>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/auth");
+                      }}
+                    >
                       Iniciar sesión
                     </Button>
-                    <Button size="sm" className="w-full gradient-cta text-primary-foreground border-0" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button
+                      size="sm"
+                      className="w-full gradient-cta text-primary-foreground border-0"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/auth");
+                      }}
+                    >
                       Únete gratis
                     </Button>
                   </>
