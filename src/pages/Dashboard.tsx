@@ -215,19 +215,10 @@ const Dashboard = () => {
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-border rounded-2xl p-5 shadow-card"
-          >
-            <p className="text-sm text-muted-foreground">Total eventos</p>
-            <p className="text-3xl font-bold text-foreground">{totalCount}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
             className="bg-card border border-border rounded-2xl p-5 shadow-card"
           >
             <p className="text-sm text-muted-foreground">Creados por mí</p>
@@ -236,8 +227,8 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card border border-border rounded-2xl p-5 shadow-card col-span-2 md:col-span-1"
+            transition={{ delay: 0.05 }}
+            className="bg-card border border-border rounded-2xl p-5 shadow-card"
           >
             <p className="text-sm text-muted-foreground">Eventos unidos</p>
             <p className="text-3xl font-bold text-accent-foreground">{joinedCount}</p>
