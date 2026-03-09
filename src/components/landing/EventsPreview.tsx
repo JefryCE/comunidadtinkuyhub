@@ -221,13 +221,16 @@ const EventsPreview = () => {
                   <p className="text-muted-foreground">{selectedEvent.requirements}</p>
                 </div>
               </div>
-              <Button
-                className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 mt-2"
-                disabled={joining === selectedEvent.id}
-                onClick={() => handleJoin(selectedEvent)}
-              >
-                {joining === selectedEvent.id ? "Inscribiendo..." : "Unirme al evento"}
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                  disabled={joining === selectedEvent.id}
+                  onClick={() => handleJoin(selectedEvent)}
+                >
+                  {joining === selectedEvent.id ? "Inscribiendo..." : "Unirme al evento"}
+                </Button>
+                <ShareEvent title={selectedEvent.title} description={selectedEvent.description} eventId={selectedEvent.id} />
+              </div>
             </>
           )}
         </DialogContent>
