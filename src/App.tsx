@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
+import EventsMap from "./pages/EventsMap";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
