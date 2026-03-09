@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import CreateEventDialog from "./CreateEventDialog";
+import ShareEvent from "@/components/ShareEvent";
 
 type EventRow = {
   id: string;
@@ -166,6 +167,7 @@ const EventsPreview = () => {
                       >
                         {joining === event.id ? "Inscribiendo..." : "Unirme"}
                       </Button>
+                      <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
                     </div>
                   </div>
                 </motion.div>
@@ -219,13 +221,16 @@ const EventsPreview = () => {
                   <p className="text-muted-foreground">{selectedEvent.requirements}</p>
                 </div>
               </div>
-              <Button
-                className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 mt-2"
-                disabled={joining === selectedEvent.id}
-                onClick={() => handleJoin(selectedEvent)}
-              >
-                {joining === selectedEvent.id ? "Inscribiendo..." : "Unirme al evento"}
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
+                  disabled={joining === selectedEvent.id}
+                  onClick={() => handleJoin(selectedEvent)}
+                >
+                  {joining === selectedEvent.id ? "Inscribiendo..." : "Unirme al evento"}
+                </Button>
+                <ShareEvent title={selectedEvent.title} description={selectedEvent.description} eventId={selectedEvent.id} />
+              </div>
             </>
           )}
         </DialogContent>

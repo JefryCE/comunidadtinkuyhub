@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import ShareEvent from "@/components/ShareEvent";
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -261,7 +262,7 @@ const EventsMap = () => {
                         <Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios
                       </p>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-3 space-y-2">
                       {joinedIds.has(ev.id) ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Ya estás inscrito
@@ -275,6 +276,7 @@ const EventsMap = () => {
                           {joining === ev.id ? "Uniéndose…" : "Unirme al evento"}
                         </button>
                       )}
+                      <ShareEvent title={ev.title} description={ev.description} eventId={ev.id} size="sm" variant="ghost" />
                     </div>
                   </div>
                 </Popup>
