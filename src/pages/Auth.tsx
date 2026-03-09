@@ -16,6 +16,7 @@ type AuthMode = "login" | "register" | "forgot";
 
 const Auth = () => {
   const [mode, setMode] = useState<AuthMode>("login");
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
