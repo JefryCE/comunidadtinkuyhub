@@ -136,6 +136,18 @@ const Navbar = () => {
                       className="w-full justify-center"
                       onClick={() => {
                         setMobileOpen(false);
+                        navigate("/dashboard");
+                      }}
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-1" />
+                      Dashboard
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
                         navigate("/profile");
                       }}
                     >
