@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Menu, X, LogOut, UserRound } from "lucide-react";
+import { Leaf, Menu, X, LogOut, UserRound, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -70,8 +70,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}
-                >
+                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="w-4 h-4 mr-1" />
+                  Dashboard
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
                   <UserRound className="w-4 h-4 mr-1" />
                   Perfil
                 </Button>
@@ -127,6 +130,18 @@ const Navbar = () => {
               <div className="pt-3 border-t border-border space-y-2">
                 {user ? (
                   <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/dashboard");
+                      }}
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-1" />
+                      Dashboard
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
