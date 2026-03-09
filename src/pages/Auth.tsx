@@ -91,8 +91,7 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("¡Cuenta creada! Revisa tu email para confirmar.");
-      navigate("/onboarding");
+      setRegisteredEmail(email);
     }
   };
 
