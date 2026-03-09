@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import CreateEventDialog from "./CreateEventDialog";
+import ShareEvent from "@/components/ShareEvent";
 
 type EventRow = {
   id: string;
