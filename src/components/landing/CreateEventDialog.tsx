@@ -159,7 +159,12 @@ const CreateEventDialog = () => {
               <div>
                 <Label htmlFor="ev-location">Ubicación *</Label>
                 <Input id="ev-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ej: Parque Central" disabled={saving} />
-              </div>
+            </div>
+
+            <div>
+              <Label>Ubicación en el mapa</Label>
+              <LocationPicker value={coords} onChange={setCoords} />
+            </div>
               <div>
                 <Label htmlFor="ev-date">Fecha *</Label>
                 <Input id="ev-date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Ej: 15 de Abril, 2026" disabled={saving} />
