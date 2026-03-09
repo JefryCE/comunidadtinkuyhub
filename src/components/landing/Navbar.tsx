@@ -98,6 +98,7 @@ const Navbar = () => {
                   <LogOut className="w-4 h-4 mr-1" />
                   Salir
                 </Button>
+                <ThemeToggle />
               </>
             ) : (
               <>
