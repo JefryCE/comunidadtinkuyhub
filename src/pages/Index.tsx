@@ -2,6 +2,7 @@ import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
 import EventsPreview from "@/components/landing/EventsPreview";
+import ActivityFeed from "@/components/ActivityFeed";
 import ImpactStats from "@/components/landing/ImpactStats";
 import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
@@ -14,6 +15,7 @@ const Index = () => {
       <HeroSection />
       <HowItWorks />
       <EventsPreview />
+      <ActivityFeed />
       <ImpactStats />
       <CTASection />
       <Footer />
