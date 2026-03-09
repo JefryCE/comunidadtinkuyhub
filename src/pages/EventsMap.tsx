@@ -204,8 +204,8 @@ const EventsMap = () => {
                     <p className="font-bold text-sm">
                       {ev.emoji} {ev.title}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{ev.description}</p>
-                    <div className="mt-2 space-y-1 text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground mt-1">{ev.description}</p>
+                    <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                       <p className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" /> {ev.location}
                       </p>
