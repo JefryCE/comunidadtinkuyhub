@@ -97,6 +97,7 @@ const CreateEventDialog = () => {
 
       toast.success("🎉 ¡Evento creado exitosamente!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
       resetForm();
       setOpen(false);
     } catch (e: any) {
