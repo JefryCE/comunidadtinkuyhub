@@ -153,6 +153,9 @@ const EventsMap = () => {
 
   const eventsWithCoords = useMemo(() => {
     return (eventsQuery.data ?? []).map((ev) => {
+      if (ev.latitude != null && ev.longitude != null) {
+        return { ...ev };
+      }
       const [lat, lng] = generateCoords(ev.id, center[0], center[1]);
       return { ...ev, latitude: lat, longitude: lng };
     });
