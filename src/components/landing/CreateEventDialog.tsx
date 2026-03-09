@@ -50,7 +50,7 @@ const CreateEventDialog = () => {
   const [description, setDescription] = useState("");
   const [typeIndex, setTypeIndex] = useState<string>("");
   const [location, setLocation] = useState("");
-  const [date, setDate] = useState<Date | undefined>(undefinedte | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(undefinedte | undefined>(undefinedte | undefined>(undefined);
   const [schedule, setSchedule] = useState("");
   const [requirements, setRequirements] = useState("");
   const [maxVolunteers, setMaxVolunteers] = useState("20");
@@ -59,7 +59,7 @@ const CreateEventDialog = () => {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setTypeIndex("");
+    sundefinedTypeIndex("");
     setLundefinedation("");
     setDate("");
     setSchedule("");
@@ -78,7 +78,7 @@ const CreateEventDialog = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !typeIndex || !location.trim() || !date.trim()) {
+    if (!title.trim() || !description.trim() || !typeIn!location.trim() || !date.trim()) {
       toast.error("Completa todos los campos obligatorios.");
       return;
     }
