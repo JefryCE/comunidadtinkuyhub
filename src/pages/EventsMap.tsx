@@ -245,7 +245,7 @@ const EventsMap = () => {
                 icon={eventIcon}
               >
                 <Popup>
-                  <div className="min-w-[200px]">
+                  <div className="min-w-[220px]">
                     <p className="font-bold text-sm">
                       {ev.emoji} {ev.title}
                     </p>
@@ -260,6 +260,21 @@ const EventsMap = () => {
                       <p className="flex items-center gap-1">
                         <Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios
                       </p>
+                    </div>
+                    <div className="mt-3">
+                      {joinedIds.has(ev.id) ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Ya estás inscrito
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleJoin(ev.id)}
+                          disabled={joining === ev.id}
+                          className="w-full text-xs font-semibold py-1.5 px-3 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                        >
+                          {joining === ev.id ? "Uniéndose…" : "Unirme al evento"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </Popup>
