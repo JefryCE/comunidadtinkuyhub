@@ -168,6 +168,18 @@ const Navbar = () => {
                       className="w-full justify-center"
                       onClick={() => {
                         setMobileOpen(false);
+                        navigate("/ranking");
+                      }}
+                    >
+                      <Trophy className="w-4 h-4 mr-1" />
+                      Ranking
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center"
+                      onClick={() => {
+                        setMobileOpen(false);
                         navigate("/profile");
                       }}
                     >
