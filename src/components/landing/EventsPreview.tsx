@@ -31,6 +31,7 @@ type EventRow = {
   schedule: string;
   requirements: string;
   created_at: string;
+  registration_open?: boolean;
 };
 
 const EventsPreview = () => {
