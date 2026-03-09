@@ -52,7 +52,9 @@ export type Database = {
           description: string
           emoji: string
           id: string
+          latitude: number | null
           location: string
+          longitude: number | null
           max_volunteers: number
           requirements: string
           schedule: string
@@ -67,7 +69,9 @@ export type Database = {
           description: string
           emoji: string
           id?: string
+          latitude?: number | null
           location: string
+          longitude?: number | null
           max_volunteers: number
           requirements: string
           schedule: string
@@ -82,7 +86,9 @@ export type Database = {
           description?: string
           emoji?: string
           id?: string
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           max_volunteers?: number
           requirements?: string
           schedule?: string
