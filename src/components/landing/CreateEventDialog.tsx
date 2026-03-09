@@ -94,7 +94,7 @@ const CreateEventDialog = () => {
         emoji: eventType.emoji,
         color: eventType.color,
         location: location.trim(),
-        date: date.trim(),
+        date: date ? format(date, "d 'de' MMMM, yyyy", { locale: es }) : "",
         schedule: schedule.trim() || "Por definir",
         requirements: requirements.trim() || "Ninguno",
         max_volunteers: Number(maxVolunteers) || 20,
