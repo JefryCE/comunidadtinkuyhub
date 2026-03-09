@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import GamificationStats from "@/components/GamificationStats";
 
 type ProfileRow = {
   id: string;
