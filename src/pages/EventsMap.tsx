@@ -132,6 +132,22 @@ const EventsMap = () => {
     },
   });
 
+  // Fetch user registrations
+  const regsQuery = useQuery({
+    queryKey: ["map-registrations", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select("event_id")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.event_id));
+    },
+  });
+
+  const joinedIds = regsQuery.data ?? new Set<string>();
+
   const center = userPos ?? defaultPos;
 
   const eventsWithCoords = useMemo(() => {
@@ -140,6 +156,32 @@ const EventsMap = () => {
       return { ...ev, latitude: lat, longitude: lng };
     });
   }, [eventsQuery.data, center]);
+
+  const handleJoin = async (eventId: string) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setJoining(eventId);
+    try {
+      const { error } = await supabase
+        .from("event_registrations")
+        .insert({ event_id: eventId, user_id: user.id });
+      if (error) throw error;
+      toast.success("¡Te uniste al evento! 🎉");
+      queryClient.invalidateQueries({ queryKey: ["map-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["my-registrations"] });
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        toast.info("Ya estás inscrito en este evento");
+      } else {
+        toast.error("Error al unirse: " + err.message);
+      }
+    } finally {
+      setJoining(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
