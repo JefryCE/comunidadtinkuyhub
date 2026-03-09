@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LocationPicker from "@/components/LocationPicker";
 
 const EVENT_TYPES = [
   { value: "Limpieza", emoji: "🌊", color: "from-cyan-400 to-blue-500" },
