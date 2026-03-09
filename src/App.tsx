@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import EventsMap from "./pages/EventsMap";
 import NotFound from "./pages/NotFound";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
