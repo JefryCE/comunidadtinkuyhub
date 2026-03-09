@@ -41,6 +41,8 @@ type RegistrationRow = {
   event_id: string;
   user_id: string;
   registered_at: string;
+  attendance_status: string;
+  points_awarded: boolean;
 };
 
 const getInitials = (nameOrEmail?: string | null) => {
