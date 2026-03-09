@@ -193,8 +193,9 @@ const Dashboard = () => {
   }, [viewMode, currentDate]);
 
   // Stats
-  const createdCount = (eventsQuery.data ?? []).filter((e) => e.created_by === user?.id).length;
-  const joinedCount = joinedEventIds.size;
+  const createdCount = myEvents.filter((e) => e.created_by === user?.id).length;
+  const joinedCount = myEvents.filter((e) => joinedEventIds.has(e.id)).length;
+  const totalCount = myEvents.length;
 
   return (
     <div className="min-h-screen bg-background">
