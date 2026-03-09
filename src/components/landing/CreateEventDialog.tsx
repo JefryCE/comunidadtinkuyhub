@@ -94,6 +94,8 @@ const CreateEventDialog = () => {
         requirements: requirements.trim() || "Ninguno",
         max_volunteers: Number(maxVolunteers) || 20,
         created_by: user!.id,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
       } as any);
 
       if (error) throw error;
