@@ -167,6 +167,7 @@ const EventsPreview = () => {
                       >
                         {joining === event.id ? "Inscribiendo..." : "Unirme"}
                       </Button>
+                      <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
                     </div>
                   </div>
                 </motion.div>
