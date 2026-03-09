@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Leaf, Mail, Lock, User, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAACoJ-5sWnCgxSlI4";
 
 type AuthMode = "login" | "register" | "forgot";
 
@@ -18,7 +21,14 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const navigate = useNavigate();
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +36,18 @@ const Auth = () => {
       toast.error("Completa todos los campos");
       return;
     }
+    if (!captchaToken) {
+      toast.error("Completa la verificación de seguridad");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    });
     setLoading(false);
+    resetCaptcha();
     if (error) {
       toast.error(error.message);
     } else {
@@ -51,6 +70,10 @@ const Auth = () => {
       toast.error("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+    if (!captchaToken) {
+      toast.error("Completa la verificación de seguridad");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -58,9 +81,11 @@ const Auth = () => {
       options: {
         data: { full_name: fullName },
         emailRedirectTo: window.location.origin,
+        captchaToken,
       },
     });
     setLoading(false);
+    resetCaptcha();
     if (error) {
       toast.error(error.message);
     } else {
@@ -217,9 +242,21 @@ const Auth = () => {
                 </div>
               )}
 
+              {mode !== "forgot" && (
+                <div className="flex justify-center">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{ theme: "light", size: "normal" }}
+                  />
+                </div>
+              )}
+
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode !== "forgot" && !captchaToken)}
                 className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11"
               >
                 {loading ? "Cargando..." : mode === "login" ? "Iniciar sesión" : mode === "register" ? "Crear cuenta" : "Enviar enlace"}
@@ -231,10 +268,11 @@ const Auth = () => {
             <div className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "login" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
               <button
-                onClick={() => {
+              onClick={() => {
                   setMode(mode === "login" ? "register" : "login");
                   setPassword("");
                   setConfirmPassword("");
+                  resetCaptcha();
                 }}
                 className="text-primary font-semibold hover:underline"
               >
