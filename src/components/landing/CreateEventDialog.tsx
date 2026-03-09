@@ -78,7 +78,7 @@ const CreateEventDialog = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !typeIn!location.trim() || !date.trim()) {
+    if (!title.trim() || !description.trim() || !typeIndex || !location.trim() || !date) {
       toast.error("Completa todos los campos obligatorios.");
       return;
     }
