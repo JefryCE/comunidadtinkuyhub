@@ -125,12 +125,17 @@ const Dashboard = () => {
 
   const joinedEventIds = useMemo(() => new Set((regsQuery.data ?? []).map((r) => r.event_id)), [regsQuery.data]);
 
-  const events = useMemo(() => {
+  // Only show events the user created or joined
+  const myEvents = useMemo(() => {
     const all = eventsQuery.data ?? [];
-    if (filter === "created") return all.filter((e) => e.created_by === user?.id);
-    if (filter === "joined") return all.filter((e) => joinedEventIds.has(e.id));
-    return all;
-  }, [eventsQuery.data, filter, user?.id, joinedEventIds]);
+    return all.filter((e) => e.created_by === user?.id || joinedEventIds.has(e.id));
+  }, [eventsQuery.data, user?.id, joinedEventIds]);
+
+  const events = useMemo(() => {
+    if (filter === "created") return myEvents.filter((e) => e.created_by === user?.id);
+    if (filter === "joined") return myEvents.filter((e) => joinedEventIds.has(e.id));
+    return myEvents;
+  }, [myEvents, filter, user?.id, joinedEventIds]);
 
   // Build parsed date map
   const eventsByDate = useMemo(() => {
@@ -188,8 +193,9 @@ const Dashboard = () => {
   }, [viewMode, currentDate]);
 
   // Stats
-  const createdCount = (eventsQuery.data ?? []).filter((e) => e.created_by === user?.id).length;
-  const joinedCount = joinedEventIds.size;
+  const createdCount = myEvents.filter((e) => e.created_by === user?.id).length;
+  const joinedCount = myEvents.filter((e) => joinedEventIds.has(e.id)).length;
+  const totalCount = myEvents.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,7 +222,7 @@ const Dashboard = () => {
             className="bg-card border border-border rounded-2xl p-5 shadow-card"
           >
             <p className="text-sm text-muted-foreground">Total eventos</p>
-            <p className="text-3xl font-bold text-foreground">{(eventsQuery.data ?? []).length}</p>
+            <p className="text-3xl font-bold text-foreground">{totalCount}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
