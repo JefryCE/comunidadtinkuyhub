@@ -24,10 +24,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Submit pending survey if exists
+      if (session?.user) {
+        const pending = localStorage.getItem("pending_survey");
+        if (pending) {
+          try {
+            const data = JSON.parse(pending);
+            await supabase.from("volunteer_surveys" as any).insert({
+              user_id: session.user.id,
+              ...data,
+            } as any);
+            localStorage.removeItem("pending_survey");
+          } catch (e) {
+            console.error("Failed to submit pending survey:", e);
+          }
+        }
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
