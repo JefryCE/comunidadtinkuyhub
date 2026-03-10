@@ -152,13 +152,6 @@ const EventsPreview = () => {
           <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
             Próximos eventos
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
-            Eventos que te esperan
-          </h2>
-          <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            Encuentra actividades de voluntariado cerca de ti y únete a la comunidad.
-          </p>
-          <CreateEventDialog />
         </motion.div>
 
         {/* Search & Filters */}
