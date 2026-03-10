@@ -25,6 +25,7 @@ type EventRow = {
   schedule: string;
   requirements: string;
   created_at: string;
+  created_by: string | null;
   registration_open?: boolean;
 };
 
