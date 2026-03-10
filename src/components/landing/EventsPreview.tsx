@@ -84,7 +84,8 @@ const EventsPreview = () => {
   const filteredEvents = useMemo(() => {
     let result = allEvents;
     if (typeFilter !== "all") {
-      result = result.filter((e) => e.type === typeFilter);
+      const q = typeFilter.toLowerCase();
+      result = result.filter((e) => e.type.toLowerCase().includes(q));
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
