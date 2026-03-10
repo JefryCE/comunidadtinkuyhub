@@ -6,7 +6,7 @@ const steps = [
     icon: UserPlus,
     emoji: "1️⃣",
     title: "Crea tu cuenta",
-    description: "Regístrate gratis en menos de un minuto y personaliza tu perfil de voluntario.",
+    description: "Regístrate en menos de un minuto y personaliza tu perfil de voluntario.",
   },
   {
     icon: Search,
