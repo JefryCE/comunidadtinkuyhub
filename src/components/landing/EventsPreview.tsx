@@ -54,6 +54,31 @@ const EventsPreview = () => {
     },
   });
 
+  const creatorIds = useMemo(() => {
+    const ids = (eventsQuery.data ?? []).map((e) => e.created_by).filter(Boolean) as string[];
+    return [...new Set(ids)];
+  }, [eventsQuery.data]);
+
+  const profilesQuery = useQuery({
+    queryKey: ["event-creators", creatorIds],
+    enabled: creatorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", creatorIds);
+      return data ?? [];
+    },
+  });
+
+  const creatorNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    (profilesQuery.data ?? []).forEach((p) => {
+      map[p.id] = p.full_name || "Organizador";
+    });
+    return map;
+  }, [profilesQuery.data]);
+
   const allEvents = eventsQuery.data ?? [];
 
   const filteredEvents = useMemo(() => {
