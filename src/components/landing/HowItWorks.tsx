@@ -6,13 +6,13 @@ const steps = [
     icon: UserPlus,
     emoji: "1️⃣",
     title: "Crea tu cuenta",
-    description: "Regístrate gratis en menos de un minuto y personaliza tu perfil de voluntario.",
+    description: "Regístrate en menos de un minuto y personaliza tu perfil de voluntario.",
   },
   {
     icon: Search,
     emoji: "2️⃣",
     title: "Encuentra eventos",
-    description: "Explora el mapa interactivo y encuentra actividades de voluntariado cerca de ti.",
+    description: "Explora el mapa con los eventos disponibles y encuentra actividades de voluntariado cerca de ti.",
   },
   {
     icon: Heart,
