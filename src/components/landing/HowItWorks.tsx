@@ -12,7 +12,7 @@ const steps = [
     icon: Search,
     emoji: "2️⃣",
     title: "Encuentra eventos",
-    description: "Explora el mapa interactivo y encuentra actividades de voluntariado cerca de ti.",
+    description: "Explora el mapa con los eventos disponibles y encuentra actividades de voluntariado cerca de ti.",
   },
   {
     icon: Heart,
