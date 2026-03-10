@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Users, Search } from "lucide-react";
+import { MapPin, Calendar, Users, Search, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-import CreateEventDialog from "./CreateEventDialog";
 import ShareEvent from "@/components/ShareEvent";
 
 type EventRow = {
@@ -26,6 +25,7 @@ type EventRow = {
   schedule: string;
   requirements: string;
   created_at: string;
+  created_by: string | null;
   registration_open?: boolean;
 };
 
@@ -53,6 +53,31 @@ const EventsPreview = () => {
       return (data ?? []) as EventRow[];
     },
   });
+
+  const creatorIds = useMemo(() => {
+    const ids = (eventsQuery.data ?? []).map((e) => e.created_by).filter(Boolean) as string[];
+    return [...new Set(ids)];
+  }, [eventsQuery.data]);
+
+  const profilesQuery = useQuery({
+    queryKey: ["event-creators", creatorIds],
+    enabled: creatorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", creatorIds);
+      return data ?? [];
+    },
+  });
+
+  const creatorNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    (profilesQuery.data ?? []).forEach((p) => {
+      map[p.id] = p.full_name || "Organizador";
+    });
+    return map;
+  }, [profilesQuery.data]);
 
   const allEvents = eventsQuery.data ?? [];
 
@@ -127,13 +152,6 @@ const EventsPreview = () => {
           <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
             Próximos eventos
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
-            Eventos que te esperan
-          </h2>
-          <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            Encuentra actividades de voluntariado cerca de ti y únete a la comunidad.
-          </p>
-          <CreateEventDialog />
         </motion.div>
 
         {/* Search & Filters */}
@@ -206,6 +224,14 @@ const EventsPreview = () => {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
                       <span>{event.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <span>{event.schedule}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      <span>{event.created_by ? (creatorNames[event.created_by] || "Organizador") : "Organizador"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users className="w-4 h-4" />
