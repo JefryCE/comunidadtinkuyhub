@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Users, Search, Clock, User } from "lucide-react";
+import { Search, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-
-import ShareEvent from "@/components/ShareEvent";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
+import EventCard from "@/components/landing/EventCard";
 
 type EventRow = {
   id: string;
@@ -27,6 +33,8 @@ type EventRow = {
   created_at: string;
   created_by: string | null;
   registration_open?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 const EVENT_TYPES = ["Limpieza", "Reforestación", "Educación", "Social", "Salud", "Animales"];
@@ -34,13 +42,33 @@ const TYPE_EMOJIS: Record<string, string> = {
   Limpieza: "🌊", Reforestación: "🌱", Educación: "📚", Social: "🤝", Salud: "❤️", Animales: "🐾",
 };
 
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 const EventsPreview = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [joining, setJoining] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {/* silently fail */}
+      );
+    }
+  }, []);
 
   const eventsQuery = useQuery({
     queryKey: ["events"],
@@ -81,8 +109,19 @@ const EventsPreview = () => {
 
   const allEvents = eventsQuery.data ?? [];
 
+  // Compute distances and sort by proximity
+  const eventsWithDistance = useMemo(() => {
+    return allEvents.map((e) => {
+      let distanceKm: number | null = null;
+      if (userLocation && e.latitude != null && e.longitude != null) {
+        distanceKm = haversineKm(userLocation.lat, userLocation.lng, e.latitude, e.longitude);
+      }
+      return { ...e, distanceKm };
+    });
+  }, [allEvents, userLocation]);
+
   const filteredEvents = useMemo(() => {
-    let result = allEvents;
+    let result = eventsWithDistance;
     if (typeFilter !== "all") {
       const q = typeFilter.toLowerCase();
       result = result.filter((e) => e.type.toLowerCase().includes(q));
@@ -96,8 +135,15 @@ const EventsPreview = () => {
           e.description.toLowerCase().includes(q)
       );
     }
+    // Sort: events with known distance first (nearest), then the rest
+    result = [...result].sort((a, b) => {
+      if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
+      if (a.distanceKm != null) return -1;
+      if (b.distanceKm != null) return 1;
+      return 0;
+    });
     return result;
-  }, [allEvents, typeFilter, searchQuery]);
+  }, [eventsWithDistance, typeFilter, searchQuery]);
 
   const handleJoin = async (event: EventRow) => {
     if (event.registration_open === false) {
@@ -141,18 +187,24 @@ const EventsPreview = () => {
   };
 
   return (
-    <section id="eventos" className="py-20 lg:py-28">
+    <section id="eventos" className="py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          className="text-center mb-8"
         >
-          <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
+          <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-3">
             Próximos eventos
           </span>
+          {userLocation && (
+            <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              Ordenados por cercanía a tu ubicación
+            </p>
+          )}
         </motion.div>
 
         {/* Search & Filters */}
@@ -196,72 +248,27 @@ const EventsPreview = () => {
               : "No hay eventos disponibles por el momento."}
           </p>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6">
-            {filteredEvents.map((event, index) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-hero transition-all duration-300 group"
-              >
-                <div className={`h-2 bg-gradient-to-r ${event.color}`} />
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl">{event.emoji}</span>
-                    <span className="text-xs font-semibold text-primary bg-accent px-2 py-0.5 rounded-full">
-                      {event.type}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-card-foreground mb-3 group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h3>
-                  <div className="space-y-2 mb-5">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{event.date}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>{event.schedule}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <User className="w-4 h-4" />
-                      <span>{event.created_by ? (creatorNames[event.created_by] || "Organizador") : "Organizador"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span>{event.max_volunteers} voluntarios máx.</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => navigate(`/evento/${event.id}`)}
-                    >
-                      Ver detalles
-                    </Button>
-                    <Button
-                      className="flex-1 gradient-cta text-primary-foreground border-0 hover:opacity-90"
-                      size="sm"
-                      disabled={joining === event.id || event.registration_open === false}
-                      onClick={() => handleJoin(event)}
-                    >
-                      {event.registration_open === false ? "🔒 Cerrado" : joining === event.id ? "Inscribiendo..." : "Unirme"}
-                    </Button>
-                    <ShareEvent title={event.title} description={event.description} eventId={event.id} size="icon" variant="ghost" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <Carousel
+            opts={{ align: "start", loop: filteredEvents.length > 3 }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {filteredEvents.map((event) => (
+                <CarouselItem key={event.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                  <EventCard
+                    event={event}
+                    creatorName={event.created_by ? (creatorNames[event.created_by] || "Organizador") : "Organizador"}
+                    joining={joining === event.id}
+                    onJoin={() => handleJoin(event)}
+                    onViewDetails={() => navigate(`/evento/${event.id}`)}
+                    distanceKm={event.distanceKm}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="-left-4 sm:-left-5" />
+            <CarouselNext className="-right-4 sm:-right-5" />
+          </Carousel>
         )}
 
         <motion.div
