@@ -226,6 +226,14 @@ const EventsPreview = () => {
                       <span>{event.date}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <span>{event.schedule}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      <span>{event.created_by ? (creatorNames[event.created_by] || "Organizador") : "Organizador"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users className="w-4 h-4" />
                       <span>{event.max_volunteers} voluntarios máx.</span>
                     </div>
