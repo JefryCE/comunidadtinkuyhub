@@ -24,14 +24,14 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section id="como-funciona" className="py-20 lg:py-28 bg-muted/50">
+    <section id="como-funciona" className="py-10 lg:py-14 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <span className="inline-block bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full mb-4">
             Así de fácil
