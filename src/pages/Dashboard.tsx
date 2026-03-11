@@ -104,6 +104,7 @@ type ViewMode = "month" | "week" | "day";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
+  const { isModerator } = useUserRole();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
