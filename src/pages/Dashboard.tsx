@@ -146,8 +146,9 @@ const Dashboard = () => {
   // Only show events the user created or joined
   const myEvents = useMemo(() => {
     const all = eventsQuery.data ?? [];
+    if (isModerator) return all; // Moderators see all events
     return all.filter((e) => e.created_by === user?.id || joinedEventIds.has(e.id));
-  }, [eventsQuery.data, user?.id, joinedEventIds]);
+  }, [eventsQuery.data, user?.id, joinedEventIds, isModerator]);
 
   const events = useMemo(() => {
     if (filter === "created") return myEvents.filter((e) => e.created_by === user?.id);
