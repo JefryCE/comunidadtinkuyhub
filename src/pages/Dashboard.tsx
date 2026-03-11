@@ -457,7 +457,7 @@ const Dashboard = () => {
                               </Button>
                             </>
                           )}
-                          {(ev.created_by === user?.id || isModerator) && (
+                          {isModerator && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button size="sm" variant="outline" className="text-destructive">
