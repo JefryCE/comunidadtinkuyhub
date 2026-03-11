@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import CreateEventDialog from "@/components/landing/CreateEventDialog";
 import EditEventDialog from "@/components/EditEventDialog";
 import {
@@ -103,6 +104,7 @@ type ViewMode = "month" | "week" | "day";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
+  const { isModerator } = useUserRole();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -144,8 +146,9 @@ const Dashboard = () => {
   // Only show events the user created or joined
   const myEvents = useMemo(() => {
     const all = eventsQuery.data ?? [];
+    if (isModerator) return all; // Moderators see all events
     return all.filter((e) => e.created_by === user?.id || joinedEventIds.has(e.id));
-  }, [eventsQuery.data, user?.id, joinedEventIds]);
+  }, [eventsQuery.data, user?.id, joinedEventIds, isModerator]);
 
   const events = useMemo(() => {
     if (filter === "created") return myEvents.filter((e) => e.created_by === user?.id);
@@ -452,6 +455,9 @@ const Dashboard = () => {
                               <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
                                 <Copy className="w-3 h-3" />
                               </Button>
+                            </>
+                          )}
+                          {(ev.created_by === user?.id || isModerator) && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button size="sm" variant="outline" className="text-destructive">
@@ -471,7 +477,6 @@ const Dashboard = () => {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
-                            </>
                           )}
                         </div>
                       </div>

@@ -155,7 +155,7 @@ const EventsMap = () => {
 
   const eventsWithCoords = useMemo(() => {
     const filtered = (eventsQuery.data ?? []).filter(
-      (ev) => activeFilter === "all" || ev.type === activeFilter
+      (ev) => (ev as any).registration_open !== false && (activeFilter === "all" || ev.type === activeFilter)
     );
     return filtered.map((ev) => {
       if (ev.latitude != null && ev.longitude != null) {
@@ -218,7 +218,14 @@ const EventsMap = () => {
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+            <Button variant="outline" size="sm" onClick={() => {
+              if (!user) {
+                toast.info("Debes iniciar sesión para acceder al Dashboard.");
+                navigate("/auth");
+              } else {
+                navigate("/dashboard");
+              }
+            }}>
               Dashboard
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/")}>
