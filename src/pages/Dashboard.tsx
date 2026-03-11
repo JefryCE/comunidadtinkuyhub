@@ -439,7 +439,7 @@ const Dashboard = () => {
                         <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {ev.location}</span>
                           <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> {ev.schedule}</span>
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios</span>
+                          
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {ev.created_by === user?.id && <Badge variant="secondary">Creado por mí</Badge>}

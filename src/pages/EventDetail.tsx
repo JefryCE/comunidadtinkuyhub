@@ -211,17 +211,8 @@ const EventDetail = () => {
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Users className="w-5 h-5 text-primary shrink-0" />
-                <span>{regCount} / {event.max_volunteers} voluntarios</span>
+                <span>{regCount} voluntarios inscritos</span>
               </div>
-            </div>
-
-            {/* Capacity bar */}
-            <div className="mb-6">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>Capacidad</span>
-                <span>{capacityPercent}%</span>
-              </div>
-              <Progress value={capacityPercent} className="h-2" />
             </div>
 
             {/* Requirements */}
