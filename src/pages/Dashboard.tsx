@@ -454,6 +454,9 @@ const Dashboard = () => {
                               <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
                                 <Copy className="w-3 h-3" />
                               </Button>
+                            </>
+                          )}
+                          {(ev.created_by === user?.id || isModerator) && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button size="sm" variant="outline" className="text-destructive">
@@ -473,7 +476,6 @@ const Dashboard = () => {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
-                            </>
                           )}
                         </div>
                       </div>
