@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import CreateEventDialog from "@/components/landing/CreateEventDialog";
 import EditEventDialog from "@/components/EditEventDialog";
 import {
