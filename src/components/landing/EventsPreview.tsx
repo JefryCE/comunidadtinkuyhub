@@ -122,6 +122,8 @@ const EventsPreview = () => {
 
   const filteredEvents = useMemo(() => {
     let result = eventsWithDistance;
+    // Hide closed events from public view
+    result = result.filter((e) => e.registration_open !== false);
     if (typeFilter !== "all") {
       const q = typeFilter.toLowerCase();
       result = result.filter((e) => e.type.toLowerCase().includes(q));
