@@ -60,10 +60,6 @@ const EventCard = ({ event, creatorName, joining, onJoin, onViewDetails, distanc
             <User className="w-4 h-4 shrink-0" />
             <span>{creatorName}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="w-4 h-4 shrink-0" />
-            <span>{event.max_volunteers} voluntarios máx.</span>
-          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="flex-1" onClick={onViewDetails}>

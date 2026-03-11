@@ -311,9 +311,6 @@ const EventsMap = () => {
                       <p className="flex items-center gap-1">
                         <CalendarDays className="w-3 h-3" /> {ev.date}
                       </p>
-                      <p className="flex items-center gap-1">
-                        <Users className="w-3 h-3" /> {ev.max_volunteers} voluntarios
-                      </p>
                     </div>
                     <div className="mt-3 space-y-2">
                       {joinedIds.has(ev.id) ? (
