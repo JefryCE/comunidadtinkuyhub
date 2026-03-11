@@ -155,7 +155,7 @@ const EventsMap = () => {
 
   const eventsWithCoords = useMemo(() => {
     const filtered = (eventsQuery.data ?? []).filter(
-      (ev) => activeFilter === "all" || ev.type === activeFilter
+      (ev) => (ev as any).registration_open !== false && (activeFilter === "all" || ev.type === activeFilter)
     );
     return filtered.map((ev) => {
       if (ev.latitude != null && ev.longitude != null) {
