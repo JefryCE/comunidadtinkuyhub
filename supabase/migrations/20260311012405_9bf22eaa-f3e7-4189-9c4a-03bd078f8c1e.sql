@@ -1,0 +1,1 @@
+DROP POLICY "Creators can delete own events" ON public.events;

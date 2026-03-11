@@ -457,7 +457,7 @@ const Dashboard = () => {
                               </Button>
                             </>
                           )}
-                          {(ev.created_by === user?.id || isModerator) && (
+                          {isModerator && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button size="sm" variant="outline" className="text-destructive">
@@ -517,6 +517,27 @@ const Dashboard = () => {
                             <Copy className="w-3 h-3" />
                           </Button>
                         </>
+                      )}
+                      {isModerator && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-destructive">
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEvent(ev.id)}>Eliminar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   </div>
