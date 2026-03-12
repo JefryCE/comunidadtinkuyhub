@@ -115,6 +115,11 @@ const Profile = () => {
   useEffect(() => {
     if (profileQuery.data && fullName === "") {
       setFullName(profileQuery.data.full_name ?? "");
+      setLinkedin(profileQuery.data.linkedin ?? "");
+      setFacebook(profileQuery.data.facebook ?? "");
+      setTiktok(profileQuery.data.tiktok ?? "");
+      setInstagram(profileQuery.data.instagram ?? "");
+      setWebsite(profileQuery.data.website ?? "");
     }
   }, [profileQuery.data, fullName]);
 
