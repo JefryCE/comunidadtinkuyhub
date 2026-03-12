@@ -19,6 +19,11 @@ type ProfileRow = {
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+  linkedin: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  website: string | null;
 };
 
 type EventRow = {
