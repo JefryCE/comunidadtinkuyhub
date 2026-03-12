@@ -28,29 +28,6 @@ type ProfileRow = {
   website: string | null;
 };
 
-type EventRow = {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  emoji: string;
-  location: string;
-  date: string;
-  schedule: string;
-  requirements: string;
-  max_volunteers: number;
-  color: string;
-  created_at: string;
-};
-
-type RegistrationRow = {
-  id: string;
-  event_id: string;
-  user_id: string;
-  registered_at: string;
-  attendance_status: string;
-  points_awarded: boolean;
-};
 
 const getInitials = (nameOrEmail?: string | null) => {
   if (!nameOrEmail) return "U";
