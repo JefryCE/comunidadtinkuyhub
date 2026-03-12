@@ -101,38 +101,6 @@ const Profile = () => {
     }
   }, [profileQuery.data, fullName]);
 
-  const registrationsQuery = useQuery({
-    queryKey: ["my-registrations", user?.id],
-    enabled: !!user,
-    queryFn: async (): Promise<Array<{ registration: RegistrationRow; event: EventRow | null }>> => {
-      if (!user) throw new Error("No authenticated user");
-
-      const { data: regs, error: regsError } = await supabase
-        .from("event_registrations")
-        .select("id, event_id, user_id, registered_at, attendance_status, points_awarded")
-        .order("registered_at", { ascending: false });
-
-      if (regsError) throw regsError;
-
-      const registrations = (regs ?? []) as RegistrationRow[];
-      const eventIds = Array.from(new Set(registrations.map((r) => r.event_id)));
-
-      if (eventIds.length === 0) return [];
-
-      const { data: events, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .in("id", eventIds);
-
-      if (eventsError) throw eventsError;
-
-      const eventsById = new Map((events ?? []).map((e) => [e.id, e as EventRow]));
-      return registrations.map((registration) => ({
-        registration,
-        event: eventsById.get(registration.event_id) ?? null,
-      }));
-    },
-  });
 
   const displayName = useMemo(() => {
     return (profileQuery.data?.full_name ?? user?.user_metadata?.full_name ?? user?.email ?? "Usuario") as string;
