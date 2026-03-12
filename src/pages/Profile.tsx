@@ -286,51 +286,61 @@ const Profile = () => {
             </div>
 
             <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-              <h2 className="text-xl font-bold text-card-foreground">Mis eventos</h2>
+              <h2 className="text-xl font-bold text-card-foreground">Redes sociales</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Aquí verás los eventos a los que te registraste.
+                Agrega tus redes sociales para que otros voluntarios te conozcan.
               </p>
-
-              <div className="mt-5 space-y-3">
-                {registrationsQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Cargando tus eventos...</p>
-                ) : registrationsQuery.isError ? (
-                  <p className="text-sm text-destructive">No se pudo cargar tu lista de eventos.</p>
-                ) : (registrationsQuery.data?.length ?? 0) === 0 ? (
-                  <p className="text-sm text-muted-foreground">Aún no estás registrado en ningún evento.</p>
-                ) : (
-                  registrationsQuery.data!.map(({ registration, event }) => (
-                    <div
-                      key={registration.id}
-                      className="rounded-xl border border-border bg-background p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            {event ? `${event.emoji} ${event.title}` : "Evento"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {event ? `${event.location} • ${event.date}` : `ID: ${registration.event_id}`}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
-                          </p>
-                          {registration.attendance_status === "confirmed" && (
-                            <span className="text-xs font-medium text-green-600 flex items-center gap-1">✅ Asistencia confirmada</span>
-                          )}
-                          {registration.attendance_status === "no_show" && (
-                            <span className="text-xs font-medium text-destructive flex items-center gap-1">❌ No asistió</span>
-                          )}
-                          {registration.attendance_status === "pending" && (
-                            <span className="text-xs font-medium text-yellow-600 flex items-center gap-1">⏳ Pendiente</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+              <div className="mt-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Linkedin className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/tu-perfil"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Facebook className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={facebook}
+                    onChange={(e) => setFacebook(e.target.value)}
+                    placeholder="https://facebook.com/tu-perfil"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <svg className="h-5 w-5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.8a8.18 8.18 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.23z"/></svg>
+                  <Input
+                    value={tiktok}
+                    onChange={(e) => setTiktok(e.target.value)}
+                    placeholder="https://tiktok.com/@tu-usuario"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Instagram className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="https://instagram.com/tu-usuario"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    placeholder="https://tu-pagina-web.com"
+                    disabled={savingSocial}
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button onClick={handleSaveSocial} disabled={savingSocial}>
+                  {savingSocial ? "Guardando..." : "Guardar redes"}
+                </Button>
               </div>
             </div>
           </section>
