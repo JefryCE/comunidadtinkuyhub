@@ -237,23 +237,38 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          facebook: string | null
           full_name: string | null
           id: string
+          instagram: string | null
+          linkedin: string | null
+          tiktok: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          facebook?: string | null
           full_name?: string | null
           id: string
+          instagram?: string | null
+          linkedin?: string | null
+          tiktok?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          facebook?: string | null
           full_name?: string | null
           id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          tiktok?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

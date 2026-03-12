@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Linkedin, Facebook, Instagram, Globe } from "lucide-react";
 
 import Navbar from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
@@ -19,31 +20,13 @@ type ProfileRow = {
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+  linkedin: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  website: string | null;
 };
 
-type EventRow = {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  emoji: string;
-  location: string;
-  date: string;
-  schedule: string;
-  requirements: string;
-  max_volunteers: number;
-  color: string;
-  created_at: string;
-};
-
-type RegistrationRow = {
-  id: string;
-  event_id: string;
-  user_id: string;
-  registered_at: string;
-  attendance_status: string;
-  points_awarded: boolean;
-};
 
 const getInitials = (nameOrEmail?: string | null) => {
   if (!nameOrEmail) return "U";
@@ -64,6 +47,13 @@ const Profile = () => {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [linkedin, setLinkedin] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [website, setWebsite] = useState("");
+  const [savingSocial, setSavingSocial] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -103,41 +93,14 @@ const Profile = () => {
   useEffect(() => {
     if (profileQuery.data && fullName === "") {
       setFullName(profileQuery.data.full_name ?? "");
+      setLinkedin(profileQuery.data.linkedin ?? "");
+      setFacebook(profileQuery.data.facebook ?? "");
+      setTiktok(profileQuery.data.tiktok ?? "");
+      setInstagram(profileQuery.data.instagram ?? "");
+      setWebsite(profileQuery.data.website ?? "");
     }
   }, [profileQuery.data, fullName]);
 
-  const registrationsQuery = useQuery({
-    queryKey: ["my-registrations", user?.id],
-    enabled: !!user,
-    queryFn: async (): Promise<Array<{ registration: RegistrationRow; event: EventRow | null }>> => {
-      if (!user) throw new Error("No authenticated user");
-
-      const { data: regs, error: regsError } = await supabase
-        .from("event_registrations")
-        .select("id, event_id, user_id, registered_at, attendance_status, points_awarded")
-        .order("registered_at", { ascending: false });
-
-      if (regsError) throw regsError;
-
-      const registrations = (regs ?? []) as RegistrationRow[];
-      const eventIds = Array.from(new Set(registrations.map((r) => r.event_id)));
-
-      if (eventIds.length === 0) return [];
-
-      const { data: events, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .in("id", eventIds);
-
-      if (eventsError) throw eventsError;
-
-      const eventsById = new Map((events ?? []).map((e) => [e.id, e as EventRow]));
-      return registrations.map((registration) => ({
-        registration,
-        event: eventsById.get(registration.event_id) ?? null,
-      }));
-    },
-  });
 
   const displayName = useMemo(() => {
     return (profileQuery.data?.full_name ?? user?.user_metadata?.full_name ?? user?.email ?? "Usuario") as string;
@@ -216,6 +179,31 @@ const Profile = () => {
       toast.error(e?.message ?? "No se pudo subir la foto");
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleSaveSocial = async () => {
+    if (!user) return;
+    setSavingSocial(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          linkedin: linkedin.trim() || null,
+          facebook: facebook.trim() || null,
+          tiktok: tiktok.trim() || null,
+          instagram: instagram.trim() || null,
+          website: website.trim() || null,
+        } as any)
+        .eq("id", user.id);
+
+      if (error) throw error;
+      toast.success("Redes sociales actualizadas");
+      await profileQuery.refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "No se pudo guardar las redes sociales");
+    } finally {
+      setSavingSocial(false);
     }
   };
 
@@ -323,51 +311,61 @@ const Profile = () => {
             </div>
 
             <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-              <h2 className="text-xl font-bold text-card-foreground">Mis eventos</h2>
+              <h2 className="text-xl font-bold text-card-foreground">Redes sociales</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Aquí verás los eventos a los que te registraste.
+                Agrega tus redes sociales para que otros voluntarios te conozcan.
               </p>
-
-              <div className="mt-5 space-y-3">
-                {registrationsQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Cargando tus eventos...</p>
-                ) : registrationsQuery.isError ? (
-                  <p className="text-sm text-destructive">No se pudo cargar tu lista de eventos.</p>
-                ) : (registrationsQuery.data?.length ?? 0) === 0 ? (
-                  <p className="text-sm text-muted-foreground">Aún no estás registrado en ningún evento.</p>
-                ) : (
-                  registrationsQuery.data!.map(({ registration, event }) => (
-                    <div
-                      key={registration.id}
-                      className="rounded-xl border border-border bg-background p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            {event ? `${event.emoji} ${event.title}` : "Evento"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {event ? `${event.location} • ${event.date}` : `ID: ${registration.event_id}`}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            Inscrito: {new Date(registration.registered_at).toLocaleDateString()}
-                          </p>
-                          {registration.attendance_status === "confirmed" && (
-                            <span className="text-xs font-medium text-green-600 flex items-center gap-1">✅ Asistencia confirmada</span>
-                          )}
-                          {registration.attendance_status === "no_show" && (
-                            <span className="text-xs font-medium text-destructive flex items-center gap-1">❌ No asistió</span>
-                          )}
-                          {registration.attendance_status === "pending" && (
-                            <span className="text-xs font-medium text-yellow-600 flex items-center gap-1">⏳ Pendiente</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+              <div className="mt-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Linkedin className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/tu-perfil"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Facebook className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={facebook}
+                    onChange={(e) => setFacebook(e.target.value)}
+                    placeholder="https://facebook.com/tu-perfil"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <svg className="h-5 w-5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.8a8.18 8.18 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.23z"/></svg>
+                  <Input
+                    value={tiktok}
+                    onChange={(e) => setTiktok(e.target.value)}
+                    placeholder="https://tiktok.com/@tu-usuario"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Instagram className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="https://instagram.com/tu-usuario"
+                    disabled={savingSocial}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <Input
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    placeholder="https://tu-pagina-web.com"
+                    disabled={savingSocial}
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button onClick={handleSaveSocial} disabled={savingSocial}>
+                  {savingSocial ? "Guardando..." : "Guardar redes"}
+                </Button>
               </div>
             </div>
           </section>
