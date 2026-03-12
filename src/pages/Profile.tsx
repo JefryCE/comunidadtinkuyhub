@@ -70,6 +70,13 @@ const Profile = () => {
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  const [linkedin, setLinkedin] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [website, setWebsite] = useState("");
+  const [savingSocial, setSavingSocial] = useState(false);
+
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [loading, user, navigate]);
