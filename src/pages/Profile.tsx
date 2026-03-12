@@ -182,6 +182,31 @@ const Profile = () => {
     }
   };
 
+  const handleSaveSocial = async () => {
+    if (!user) return;
+    setSavingSocial(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          linkedin: linkedin.trim() || null,
+          facebook: facebook.trim() || null,
+          tiktok: tiktok.trim() || null,
+          instagram: instagram.trim() || null,
+          website: website.trim() || null,
+        } as any)
+        .eq("id", user.id);
+
+      if (error) throw error;
+      toast.success("Redes sociales actualizadas");
+      await profileQuery.refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "No se pudo guardar las redes sociales");
+    } finally {
+      setSavingSocial(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
