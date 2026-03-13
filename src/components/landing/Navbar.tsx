@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import ThemeToggle from "@/components/ThemeToggle";
+
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -94,7 +94,6 @@ const Navbar = () => {
                   <LogOut className="w-4 h-4 mr-1" />
                   Salir
                 </Button>
-                <ThemeToggle />
               </>
             ) : (
               <>
@@ -108,7 +107,6 @@ const Navbar = () => {
                 >
                   Únete gratis
                 </Button>
-                <ThemeToggle />
               </>
             )}
           </div>

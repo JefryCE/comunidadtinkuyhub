@@ -52,35 +52,6 @@
     --shadow-hero: 0 20px 60px -15px hsl(325 99% 66% / 0.25);
   }
 
-  .dark {
-    --background: 210 60% 6%;
-    --foreground: 207 80% 92%;
-    --card: 210 50% 10%;
-    --card-foreground: 207 80% 92%;
-    --popover: 210 50% 10%;
-    --popover-foreground: 207 80% 92%;
-    --primary: 325 99% 66%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 75% 20%;
-    --secondary-foreground: 207 80% 92%;
-    --muted: 210 40% 15%;
-    --muted-foreground: 207 40% 60%;
-    --accent: 210 50% 18%;
-    --accent-foreground: 207 80% 85%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 210 30% 18%;
-    --input: 210 30% 18%;
-    --ring: 325 99% 66%;
-    --sidebar-background: 210 50% 8%;
-    --sidebar-foreground: 207 80% 92%;
-    --sidebar-primary: 325 99% 66%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 15%;
-    --sidebar-accent-foreground: 207 80% 92%;
-    --sidebar-border: 210 30% 18%;
-    --sidebar-ring: 325 99% 66%;
-  }
 }
 
 @layer utilities {
