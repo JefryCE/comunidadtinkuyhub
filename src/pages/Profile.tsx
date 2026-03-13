@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,7 @@ type ProfileRow = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  bio: string | null;
   created_at: string;
   updated_at: string;
   linkedin: string | null;
@@ -47,6 +49,8 @@ const Profile = () => {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [bio, setBio] = useState("");
 
   const [linkedin, setLinkedin] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -93,6 +97,7 @@ const Profile = () => {
   useEffect(() => {
     if (profileQuery.data && fullName === "") {
       setFullName(profileQuery.data.full_name ?? "");
+      setBio(profileQuery.data.bio ?? "");
       setLinkedin(profileQuery.data.linkedin ?? "");
       setFacebook(profileQuery.data.facebook ?? "");
       setTiktok(profileQuery.data.tiktok ?? "");
@@ -112,7 +117,7 @@ const Profile = () => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: fullName.trim() || null })
+        .update({ full_name: fullName.trim() || null, bio: bio.trim() || null } as any)
         .eq("id", user.id);
 
       if (error) throw error;
@@ -221,95 +226,41 @@ const Profile = () => {
         </div>
 
         <div className="mt-10 grid lg:grid-cols-3 gap-8">
-          <section className="lg:col-span-1 bg-card border border-border rounded-2xl shadow-card p-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={profileQuery.data?.avatar_url ?? undefined} alt="Avatar" />
-                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-card-foreground">{displayName}</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
-              </div>
-            </div>
-
-            <Separator className="my-6" />
-
-            <div className="space-y-2">
-              <Label htmlFor="avatar">Subir foto</Label>
-              <Input
-                id="avatar"
-                type="file"
-                accept="image/*"
-                disabled={uploadingAvatar}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleAvatarUpload(file);
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Formatos: JPG/PNG/WebP. Se guardará en tu cuenta.
-              </p>
-            </div>
-          </section>
-
-          <section className="lg:col-span-2 space-y-8">
-            {/* Gamification */}
-            <GamificationStats />
+          {/* Left column: Avatar + Photo + Social */}
+          <section className="lg:col-span-1 space-y-6">
             <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-              <h2 className="text-xl font-bold text-card-foreground">Datos</h2>
-              <div className="mt-5 grid sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <Label htmlFor="fullName">Nombre completo</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Tu nombre"
-                    disabled={profileQuery.isLoading || savingName}
-                  />
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={profileQuery.data?.avatar_url ?? undefined} alt="Avatar" />
+                  <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold text-card-foreground">{displayName}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
                 </div>
               </div>
-              <div className="mt-5 flex justify-end">
-                <Button onClick={handleSaveName} disabled={savingName || profileQuery.isLoading}>
-                  {savingName ? "Guardando..." : "Guardar"}
-                </Button>
+
+              <Separator className="my-6" />
+
+              <div className="space-y-2">
+                <Label htmlFor="avatar">Subir foto</Label>
+                <Input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingAvatar}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleAvatarUpload(file);
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Formatos: JPG/PNG/WebP. Se guardará en tu cuenta.
+                </p>
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-              <h2 className="text-xl font-bold text-card-foreground">Cambiar contraseña</h2>
-              <div className="mt-5 grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="newPassword">Nueva contraseña</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={savingPassword}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={savingPassword}
-                  />
-                </div>
-              </div>
-              <div className="mt-5 flex justify-end">
-                <Button onClick={handleChangePassword} disabled={savingPassword}>
-                  {savingPassword ? "Actualizando..." : "Actualizar contraseña"}
-                </Button>
-              </div>
-            </div>
-
+            {/* Social links - below photo */}
             <div className="bg-card border border-border rounded-2xl shadow-card p-6">
               <h2 className="text-xl font-bold text-card-foreground">Redes sociales</h2>
               <p className="text-sm text-muted-foreground mt-1">
@@ -365,6 +316,75 @@ const Profile = () => {
               <div className="mt-5 flex justify-end">
                 <Button onClick={handleSaveSocial} disabled={savingSocial}>
                   {savingSocial ? "Guardando..." : "Guardar redes"}
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          {/* Right column: Gamification + Data + Password */}
+          <section className="lg:col-span-2 space-y-8">
+            <GamificationStats />
+            <div className="bg-card border border-border rounded-2xl shadow-card p-6">
+              <h2 className="text-xl font-bold text-card-foreground">Datos</h2>
+              <div className="mt-5 space-y-4">
+                <div>
+                  <Label htmlFor="fullName">Nombre completo</Label>
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Tu nombre"
+                    disabled={profileQuery.isLoading || savingName}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="bio">Más sobre mí</Label>
+                  <Textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Cuéntanos sobre ti, tus intereses y motivaciones como voluntario..."
+                    disabled={profileQuery.isLoading || savingName}
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button onClick={handleSaveName} disabled={savingName || profileQuery.isLoading}>
+                  {savingName ? "Guardando..." : "Guardar"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl shadow-card p-6">
+              <h2 className="text-xl font-bold text-card-foreground">Cambiar contraseña</h2>
+              <div className="mt-5 grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="newPassword">Nueva contraseña</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    disabled={savingPassword}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirmar</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    disabled={savingPassword}
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button onClick={handleChangePassword} disabled={savingPassword}>
+                  {savingPassword ? "Actualizando..." : "Actualizar contraseña"}
                 </Button>
               </div>
             </div>
