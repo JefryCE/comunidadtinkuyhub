@@ -50,6 +50,8 @@ const Profile = () => {
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  const [bio, setBio] = useState("");
+
   const [linkedin, setLinkedin] = useState("");
   const [facebook, setFacebook] = useState("");
   const [tiktok, setTiktok] = useState("");
