@@ -94,7 +94,6 @@ const Navbar = () => {
                   <LogOut className="w-4 h-4 mr-1" />
                   Salir
                 </Button>
-                <ThemeToggle />
               </>
             ) : (
               <>
@@ -108,7 +107,6 @@ const Navbar = () => {
                 >
                   Únete gratis
                 </Button>
-                <ThemeToggle />
               </>
             )}
           </div>
