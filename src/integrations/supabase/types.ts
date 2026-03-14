@@ -235,40 +235,73 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string | null
           avatar_url: string | null
           bio: string | null
+          business_name: string | null
+          business_sector: string | null
+          country: string | null
           created_at: string
           facebook: string | null
+          fiscal_address: string | null
+          fiscal_district: string | null
           full_name: string | null
           id: string
           instagram: string | null
+          legal_representative: string | null
           linkedin: string | null
+          organization_name: string | null
+          organization_type: string | null
+          phone: string | null
+          ruc: string | null
           tiktok: string | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          business_name?: string | null
+          business_sector?: string | null
+          country?: string | null
           created_at?: string
           facebook?: string | null
+          fiscal_address?: string | null
+          fiscal_district?: string | null
           full_name?: string | null
           id: string
           instagram?: string | null
+          legal_representative?: string | null
           linkedin?: string | null
+          organization_name?: string | null
+          organization_type?: string | null
+          phone?: string | null
+          ruc?: string | null
           tiktok?: string | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          business_name?: string | null
+          business_sector?: string | null
+          country?: string | null
           created_at?: string
           facebook?: string | null
+          fiscal_address?: string | null
+          fiscal_district?: string | null
           full_name?: string | null
           id?: string
           instagram?: string | null
+          legal_representative?: string | null
           linkedin?: string | null
+          organization_name?: string | null
+          organization_type?: string | null
+          phone?: string | null
+          ruc?: string | null
           tiktok?: string | null
           updated_at?: string
           website?: string | null
