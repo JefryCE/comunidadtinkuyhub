@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { isEventPast } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
@@ -73,10 +74,12 @@ const EventsPreview = () => {
   const eventsQuery = useQuery({
     queryKey: ["events"],
     queryFn: async (): Promise<EventRow[]> => {
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .order("created_at", { ascending: true });
+        .gte("date", today)
+        .order("date", { ascending: true });
       if (error) throw error;
       return (data ?? []) as EventRow[];
     },
@@ -122,8 +125,9 @@ const EventsPreview = () => {
 
   const filteredEvents = useMemo(() => {
     let result = eventsWithDistance;
-    // Hide closed events from public view
-    result = result.filter((e) => e.registration_open !== false);
+    // Hide closed and past events from public view
+    result = result.filter((e) => e.registration_open !== false && !isEventPast(e.date, e.schedule));
+    
     if (typeFilter !== "all") {
       const q = typeFilter.toLowerCase();
       result = result.filter((e) => e.type.toLowerCase().includes(q));
@@ -189,7 +193,7 @@ const EventsPreview = () => {
   };
 
   return (
-    <section id="eventos" className="py-12 lg:py-16">
+    <section id="eventos" className="pt-12 pb-4 lg:pt-16 lg:pb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -278,7 +282,7 @@ const EventsPreview = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="text-center mt-10"
+          className="text-center mt-6"
         >
           <Button variant="outline" size="lg" onClick={() => navigate("/eventos")}>
             Ver todos en el mapa

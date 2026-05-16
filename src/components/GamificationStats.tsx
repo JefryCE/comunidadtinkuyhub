@@ -1,5 +1,5 @@
 import { useGamification } from "@/hooks/useGamification";
-import { getLevel, getNextLevel, getLevelProgress, BADGES } from "@/lib/gamification";
+import { getLevel, getNextLevel, getLevelProgress, BADGES, LEVELS } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
 import { Flame, Trophy, Target, Zap } from "lucide-react";
 
@@ -34,7 +34,12 @@ const GamificationStats = () => {
     <div className="space-y-6">
       {/* Level & Points */}
       <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-        <h2 className="text-xl font-bold text-card-foreground mb-4">Tu nivel</h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-card-foreground">Tu nivel</h2>
+          <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+            Gana puntos participando en eventos (50 pts) y manteniendo una racha semanal (25 pts). ¡Sigue demostrando tu compromiso con la comunidad para evolucionar y alcanzar nuevas metas!
+          </p>
+        </div>
 
         <div className="flex items-center gap-4 mb-4">
           <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${level.color} flex items-center justify-center text-3xl shadow-lg`}>
@@ -62,6 +67,38 @@ const GamificationStats = () => {
         {!nextLevel && (
           <p className="text-sm text-primary font-medium">🏆 ¡Has alcanzado el nivel máximo!</p>
         )}
+
+        {/* All levels guide */}
+        <div className="mt-8 border-t border-border pt-6">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Evolución de niveles</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {LEVELS.map((lvl) => {
+              const hasReached = stats.totalPoints >= lvl.minPoints;
+              return (
+                <div
+                  key={lvl.name}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                    hasReached
+                      ? "bg-primary/5 border-primary/20 shadow-sm"
+                      : "bg-muted/20 border-border grayscale opacity-50"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg bg-gradient-to-br ${lvl.color} flex items-center justify-center text-xl shadow-inner shrink-0`}
+                  >
+                    {lvl.emoji}
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${hasReached ? "text-foreground" : "text-muted-foreground"}`}>
+                      {lvl.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{lvl.minPoints > 0 ? `${lvl.minPoints} pts` : "Auto"}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Stats grid */}

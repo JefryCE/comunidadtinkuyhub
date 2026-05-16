@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { CalendarPlus, UserPlus, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 type Activity = {
   id: string;
@@ -10,6 +11,8 @@ type Activity = {
   detail: string;
   time: string;
   emoji: string;
+  createdBy?: string;
+  eventId?: string;
 };
 
 const ActivityFeed = () => {
@@ -21,11 +24,17 @@ const ActivityFeed = () => {
       // Recent events created
       const { data: events } = await supabase
         .from("events")
-        .select("id, title, emoji, created_at")
+        .select(`
+          id, 
+          title, 
+          emoji, 
+          created_at,
+          profiles:created_by (full_name)
+        `)
         .order("created_at", { ascending: false })
         .limit(5);
 
-      (events ?? []).forEach((e) => {
+      (events ?? []).forEach((e: any) => {
         activities.push({
           id: `ev-${e.id}`,
           type: "event_created",
@@ -33,13 +42,20 @@ const ActivityFeed = () => {
           detail: `${e.emoji} ${e.title}`,
           time: e.created_at,
           emoji: "📌",
+          createdBy: e.profiles?.full_name || "Organización",
+          eventId: e.id,
         });
       });
 
       // Recent registrations (public count only)
       const { data: regs } = await supabase
         .from("event_registrations")
-        .select("id, event_id, registered_at")
+        .select(`
+          id, 
+          event_id, 
+          registered_at,
+          profiles:user_id (full_name)
+        `)
         .order("registered_at", { ascending: false })
         .limit(8);
 
@@ -52,16 +68,18 @@ const ActivityFeed = () => {
 
         const eventMap = new Map((regEvents ?? []).map((e) => [e.id, e]));
 
-        regs.forEach((r) => {
+        regs.forEach((r: any) => {
           const ev = eventMap.get(r.event_id);
           if (ev) {
             activities.push({
               id: `reg-${r.id}`,
               type: "registration",
-              title: "Nuevo voluntario inscrito",
+              title: "Nueva inscripción",
               detail: `${ev.emoji} ${ev.title}`,
               time: r.registered_at,
               emoji: "🙋",
+              createdBy: r.profiles?.full_name || "Un voluntario",
+              eventId: r.event_id,
             });
           }
         });
@@ -100,7 +118,7 @@ const ActivityFeed = () => {
 
       // Sort by time
       activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-      return activities.slice(0, 15);
+      return activities.slice(0, 5);
     },
     refetchInterval: 30000,
   });
@@ -125,9 +143,10 @@ const ActivityFeed = () => {
   };
 
   const activities = query.data ?? [];
+  const navigate = useNavigate();
 
   return (
-    <section className="py-16 lg:py-20">
+    <section className="pt-8 pb-16 lg:pt-10 lg:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -164,10 +183,26 @@ const ActivityFeed = () => {
                     {getIcon(a.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{a.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{a.detail}</p>
+                    <p className="text-sm font-semibold text-foreground leading-tight">{a.title}</p>
+                    <p className="text-xs text-primary font-medium mt-0.5">{a.detail}</p>
+                    {a.createdBy && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {a.type === "event_created" ? "Organizado por " : "Por "}
+                        <span className="font-semibold text-foreground/80">{a.createdBy}</span>
+                      </p>
+                    )}
                   </div>
-                  <span className="text-[10px] text-muted-foreground shrink-0 mt-1">{timeAgo(a.time)}</span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-[10px] text-muted-foreground">{timeAgo(a.time)}</span>
+                    {(a.type === "event_created" || a.type === "registration") && a.eventId && (
+                      <button 
+                        onClick={() => navigate(`/evento/${a.eventId}`)}
+                        className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors"
+                      >
+                        Ver evento
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>

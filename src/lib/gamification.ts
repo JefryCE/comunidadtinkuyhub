@@ -11,11 +11,11 @@ export const POINTS = {
 // ─── LEVELS ───
 export const LEVELS = [
   { name: "Semilla", emoji: "🌱", minPoints: 0, color: "from-emerald-400 to-green-500" },
-  { name: "Brote", emoji: "🌿", minPoints: 100, color: "from-green-400 to-teal-500" },
-  { name: "Árbol", emoji: "🌳", minPoints: 300, color: "from-teal-400 to-cyan-500" },
-  { name: "Bosque", emoji: "🌲", minPoints: 600, color: "from-cyan-400 to-blue-500" },
-  { name: "Guardián", emoji: "🛡️", minPoints: 1000, color: "from-blue-400 to-violet-500" },
-  { name: "Leyenda", emoji: "⭐", minPoints: 2000, color: "from-violet-400 to-purple-500" },
+  { name: "Brote", emoji: "🌿", minPoints: 300, color: "from-green-400 to-teal-500" },
+  { name: "Árbol", emoji: "🌳", minPoints: 900, color: "from-teal-400 to-cyan-500" },
+  { name: "Bosque", emoji: "🌲", minPoints: 1800, color: "from-cyan-400 to-blue-500" },
+  { name: "Guardián", emoji: "🛡️", minPoints: 3000, color: "from-blue-400 to-violet-500" },
+  { name: "Leyenda", emoji: "⭐", minPoints: 6000, color: "from-violet-400 to-purple-500" },
 ] as const;
 
 export const getLevel = (points: number): typeof LEVELS[number] => {
@@ -122,14 +122,14 @@ export const BADGES: BadgeDef[] = [
     name: "Guardián del Planeta",
     description: "Alcanzaste el nivel Guardián",
     emoji: "🛡️",
-    condition: (s) => s.totalPoints >= 1000,
+    condition: (s) => s.totalPoints >= 3000,
   },
   {
     id: "level_legend",
     name: "Leyenda Viviente",
     description: "Alcanzaste el nivel Leyenda",
     emoji: "👑",
-    condition: (s) => s.totalPoints >= 2000,
+    condition: (s) => s.totalPoints >= 6000,
   },
 ];
 
@@ -222,20 +222,56 @@ export const awardPointsForJoin = async (userId: string) => {
   return { pointsEarned, newBadges, stats };
 };
 
-// ─── CONFIRM ATTENDANCE (organizer confirms volunteer attended) ───
-
 export const confirmAttendance = async (registrationId: string, volunteerId: string) => {
-  // Mark registration as confirmed
+  // Solo actualiza el estado a confirmado. El voluntario reclamará los puntos en background
+  // para no violar las políticas RLS del perfil de gamificación.
   const { error: updateError } = await supabase
     .from("event_registrations")
-    .update({ attendance_status: "confirmed", points_awarded: true })
-    .eq("id", registrationId);
+    .update({ attendance_status: "confirmed" })
+    .eq("id", registrationId)
+    .single();
 
   if (updateError) throw updateError;
+  return { pointsEarned: 0, newBadges: [] };
+};
 
-  // Award points now that attendance is confirmed
-  const result = await awardPointsForJoin(volunteerId);
-  return result;
+export const claimPendingPoints = async (userId: string) => {
+  // Buscar eventos confirmados pero sin puntos entregados
+  const { data: pendingClaims, error } = await supabase
+    .from("event_registrations")
+    .select("id, event_id")
+    .eq("user_id", userId)
+    .eq("attendance_status", "confirmed")
+    .eq("points_awarded", false);
+
+  if (error || !pendingClaims || pendingClaims.length === 0) return { newPoints: 0, newBadges: [] };
+
+  let totalPoints = 0;
+  const allNewBadges: string[] = [];
+
+  for (const claim of pendingClaims) {
+    // 1. Evitar race condition de multi-reclamo bloqueando con select
+    const { data: verifyReg } = await supabase
+      .from("event_registrations")
+      .select("points_awarded")
+      .eq("id", claim.id)
+      .single();
+
+    if (verifyReg?.points_awarded) continue;
+
+    // 2. Marcar como otorgado ANTES de dar puntos
+    await supabase
+      .from("event_registrations")
+      .update({ points_awarded: true })
+      .eq("id", claim.id);
+
+    // 3. Dar puntos al usuario
+    const result = await awardPointsForJoin(userId);
+    totalPoints += result.pointsEarned;
+    allNewBadges.push(...result.newBadges);
+  }
+
+  return { newPoints: totalPoints, newBadges: allNewBadges };
 };
 
 export const markNoShow = async (registrationId: string) => {

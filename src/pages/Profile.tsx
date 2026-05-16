@@ -2,17 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Linkedin, Facebook, Instagram, Globe } from "lucide-react";
+import { Linkedin, Facebook, Instagram, Globe, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import GamificationStats from "@/components/GamificationStats";
 
 type ProfileRow = {
@@ -20,6 +22,7 @@ type ProfileRow = {
   full_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  account_type: string | null;
   created_at: string;
   updated_at: string;
   linkedin: string | null;
@@ -39,6 +42,7 @@ const getInitials = (nameOrEmail?: string | null) => {
 
 const Profile = () => {
   const { user, loading } = useAuth();
+  const { isAdmin, isModerator } = useUserRole();
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState("");
@@ -84,8 +88,18 @@ const Profile = () => {
         .insert({
           id: user.id,
           full_name: (user.user_metadata?.full_name as string | undefined) ?? null,
+          account_type: (user.user_metadata?.account_type as string | undefined) ?? null,
+          organization_name: (user.user_metadata?.organization_name as string | undefined) ?? null,
+          organization_type: (user.user_metadata?.organization_type as string | undefined) ?? null,
+          legal_representative: (user.user_metadata?.legal_representative as string | undefined) ?? null,
+          country: (user.user_metadata?.country as string | undefined) ?? null,
+          fiscal_district: (user.user_metadata?.fiscal_district as string | undefined) ?? null,
+          business_name: (user.user_metadata?.business_name as string | undefined) ?? null,
+          business_sector: (user.user_metadata?.business_sector as string | undefined) ?? null,
+          fiscal_address: (user.user_metadata?.fiscal_address as string | undefined) ?? null,
+          ruc: (user.user_metadata?.ruc as string | undefined) ?? null,
           avatar_url: null,
-        })
+        } as any)
         .select("*")
         .single();
 
@@ -228,34 +242,77 @@ const Profile = () => {
         <div className="mt-10 grid lg:grid-cols-3 gap-8">
           {/* Left column: Avatar + Photo + Social */}
           <section className="lg:col-span-1 space-y-6">
-            <div className="bg-card border border-border rounded-2xl shadow-card p-6">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={profileQuery.data?.avatar_url ?? undefined} alt="Avatar" />
-                  <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-card-foreground">{displayName}</p>
-                  <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <div className="bg-card border border-border rounded-2xl shadow-card p-6 overflow-hidden">
+              <div className="flex flex-col items-center sm:items-start gap-4">
+                <div className="relative group/avatar">
+                  <Avatar className="h-24 w-24 sm:h-20 sm:w-20 ring-4 ring-background shadow-sm border border-border">
+                    <AvatarImage src={profileQuery.data?.avatar_url ?? undefined} alt="Avatar" className="object-cover" />
+                    <AvatarFallback className="text-2xl">{getInitials(displayName)}</AvatarFallback>
+                  </Avatar>
+                  <label 
+                    htmlFor="avatar" 
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold uppercase tracking-tighter"
+                  >
+                    Editar
+                  </label>
+                </div>
+                
+                <div className="flex-1 text-center sm:text-left min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1.5">
+                    <h2 className="font-bold text-foreground text-xl truncate tracking-tight">{displayName}</h2>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 mb-3">
+                    {profileQuery.data?.account_type && (
+                      <Badge variant="secondary" className="px-2 py-0 h-5 text-[9px] uppercase font-bold tracking-wider bg-primary/10 text-primary border-primary/20">
+                        {profileQuery.data.account_type === "persona_natural" ? "Voluntario" : 
+                         profileQuery.data.account_type === "ong" ? "ONG / Organización" : 
+                         "Empresa"}
+                      </Badge>
+                    )}
+                    {isAdmin && (
+                      <Badge variant="default" className="px-2 py-0 h-5 text-[9px] uppercase font-bold tracking-wider bg-orange-500 text-white border-none shadow-sm">
+                        Admin
+                      </Badge>
+                    )}
+                    {isModerator && !isAdmin && (
+                      <Badge variant="default" className="px-2 py-0 h-5 text-[9px] uppercase font-bold tracking-wider bg-indigo-600 text-white border-none shadow-sm">
+                        Moderador
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                 </div>
               </div>
 
               <Separator className="my-6" />
 
-              <div className="space-y-2">
-                <Label htmlFor="avatar">Subir foto</Label>
-                <Input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  disabled={uploadingAvatar}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void handleAvatarUpload(file);
-                  }}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Formatos: JPG/PNG/WebP. Se guardará en tu cuenta.
+              <div className="space-y-3">
+                <Label htmlFor="avatar" className="text-sm font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Actualizar foto de perfil
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingAvatar}
+                    className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold hover:border-primary/50"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleAvatarUpload(file);
+                    }}
+                  />
+                  {uploadingAvatar && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Recomendado: Imagen cuadrada de al menos 400x400px.
                 </p>
               </div>
             </div>

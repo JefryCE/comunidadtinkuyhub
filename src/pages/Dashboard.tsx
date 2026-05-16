@@ -1,153 +1,83 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
-import {
-  CalendarDays,
-  Plus,
-  Users,
-  MapPin,
-  Pencil,
-  Trash2,
-  Copy,
-  ClipboardList,
-  Clock,
-  Eye,
-} from "lucide-react";
+import { Heart, Building2, Shield, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import Navbar from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import CreateEventDialog from "@/components/landing/CreateEventDialog";
-import EditEventDialog from "@/components/EditEventDialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import VolunteerDashboard from "@/components/dashboard/VolunteerDashboard";
+import OrgDashboard from "@/components/dashboard/OrgDashboard";
+import AdminPanel from "@/components/dashboard/AdminPanel";
 
-type EventRow = {
-  id: string;
-  emoji: string;
-  type: string;
-  title: string;
-  location: string;
-  date: string;
-  max_volunteers: number;
-  color: string;
-  description: string;
-  schedule: string;
-  requirements: string;
-  created_at: string;
-  created_by: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  registration_open?: boolean;
-};
-
-type RegistrationRow = {
-  id: string;
-  event_id: string;
-  user_id: string;
-  registered_at: string;
-};
+type DashboardView = "volunteer" | "organization" | "admin";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
-  const { isModerator } = useUserRole();
+  const { isAdmin, isModerator } = useUserRole();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = (searchParams.get("view") as DashboardView) || null;
 
-  const [filter, setFilter] = useState<"all" | "created" | "joined">("all");
-  const [editingEvent, setEditingEvent] = useState<EventRow | null>(null);
+  const setView = (newView: DashboardView) => {
+    searchParams.set("view", newView);
+    setSearchParams(searchParams);
+  };
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [loading, user, navigate]);
 
-  const eventsQuery = useQuery({
-    queryKey: ["dashboard-events"],
+  // Fetch account_type from profiles
+  const profileQuery = useQuery({
+    queryKey: ["profile-account-type", user?.id],
     enabled: !!user,
-    queryFn: async (): Promise<EventRow[]> => {
-      const { data, error } = await supabase.from("events").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as EventRow[];
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data?.account_type as string | null | undefined;
     },
   });
 
-  const regsQuery = useQuery({
-    queryKey: ["dashboard-registrations", user?.id],
-    enabled: !!user,
-    queryFn: async (): Promise<RegistrationRow[]> => {
-      const { data, error } = await supabase
-        .from("event_registrations")
-        .select("id, event_id, user_id, registered_at");
-      if (error) throw error;
-      return (data ?? []) as RegistrationRow[];
-    },
-  });
+  const accountType = profileQuery.data;
+  const isOng     = accountType === "ong";
+  const isEmpresa = accountType === "empresa";
+  const isOrgType = isOng || isEmpresa; // any org account
 
-  const joinedEventIds = useMemo(() => new Set((regsQuery.data ?? []).map((r) => r.event_id)), [regsQuery.data]);
-
-  const myEvents = useMemo(() => {
-    const all = eventsQuery.data ?? [];
-    if (isModerator) return all;
-    return all.filter((e) => e.created_by === user?.id || joinedEventIds.has(e.id));
-  }, [eventsQuery.data, user?.id, joinedEventIds, isModerator]);
-
-  const events = useMemo(() => {
-    if (filter === "created") return myEvents.filter((e) => e.created_by === user?.id);
-    if (filter === "joined") return myEvents.filter((e) => joinedEventIds.has(e.id));
-    return myEvents;
-  }, [myEvents, filter, user?.id, joinedEventIds]);
-
-  const createdCount = myEvents.filter((e) => e.created_by === user?.id).length;
-  const joinedCount = myEvents.filter((e) => joinedEventIds.has(e.id)).length;
-
-  const handleDeleteEvent = async (eventId: string) => {
-    try {
-      const { error } = await supabase.from("events").delete().eq("id", eventId);
-      if (error) throw error;
-      toast.success("🗑️ Evento eliminado");
-      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Error al eliminar");
+  // Set default view based on account_type ONLY if there is no view in URL
+  useEffect(() => {
+    if (profileQuery.isLoading || profileQuery.isFetching || view) return;
+    
+    if (isOrgType) {
+      setView("organization");
+    } else {
+      setView("volunteer");
     }
-  };
+  }, [isOrgType, profileQuery.isLoading, profileQuery.isFetching, view]);
 
-  const handleDuplicate = async (ev: EventRow) => {
-    if (!user) return;
-    try {
-      const { error } = await supabase.from("events").insert({
-        title: `${ev.title} (copia)`,
-        description: ev.description,
-        type: ev.type,
-        emoji: ev.emoji,
-        color: ev.color,
-        location: ev.location,
-        date: ev.date,
-        schedule: ev.schedule,
-        requirements: ev.requirements,
-        max_volunteers: ev.max_volunteers,
-        created_by: user.id,
-      } as any);
-      if (error) throw error;
-      toast.success("📋 Evento duplicado");
-      queryClient.invalidateQueries({ queryKey: ["dashboard-events"] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Error al duplicar");
-    }
-  };
+  // While resolving account_type, show a centered spinner
+  if (!view || profileQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
-  const isCreator = (ev: EventRow) => ev.created_by === user?.id;
-  const isJoined = (ev: EventRow) => joinedEventIds.has(ev.id);
+  const subtitle =
+    view === "volunteer"
+      ? "Tu espacio como voluntario."
+      : view === "admin"
+      ? "Panel de administración total — gestiona la comunidad."
+      : isEmpresa
+      ? "Panel de empresa — gestiona tus eventos y mide tu impacto."
+      : "Panel de organización — gestiona tus eventos y mide tu impacto.";
 
   return (
     <div className="min-h-screen bg-background">
@@ -157,159 +87,76 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground">Mi Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Gestiona y visualiza tus eventos.</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground">
+              Mi Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">{subtitle}</p>
           </div>
-          <div className="flex gap-2">
-            <CreateEventDialog />
-            <Button variant="outline" onClick={() => navigate("/")}>Inicio</Button>
-          </div>
+          <Button variant="outline" onClick={() => navigate("/")}>
+            Inicio
+          </Button>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        {/* View toggle — ONLY visible for admins & moderators (can switch between both views) */}
+        {(isAdmin || isModerator) && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-border rounded-2xl p-5 shadow-card"
+            className="mb-8"
           >
-            <p className="text-sm text-muted-foreground">Creados por mí</p>
-            <p className="text-3xl font-bold text-primary">{createdCount}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="bg-card border border-border rounded-2xl p-5 shadow-card"
-          >
-            <p className="text-sm text-muted-foreground">Eventos unidos</p>
-            <p className="text-3xl font-bold text-accent-foreground">{joinedCount}</p>
-          </motion.div>
-        </div>
-
-        {/* Filter tabs */}
-        <div className="mb-6">
-          <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
-            <TabsList>
-              <TabsTrigger value="all">Todos ({myEvents.length})</TabsTrigger>
-              <TabsTrigger value="created">Creados ({createdCount})</TabsTrigger>
-              <TabsTrigger value="joined">Inscritos ({joinedCount})</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Event list */}
-        {events.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p className="text-lg font-medium">No tienes eventos aquí aún</p>
-            <p className="text-sm mt-1">Crea un evento o inscríbete a uno para verlo aquí.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {events.map((ev, i) => (
-              <motion.div
-                key={ev.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="rounded-2xl border border-border bg-card shadow-card overflow-hidden"
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="text-xs font-medium text-muted-foreground">
+                Vista de administrador
+              </span>
+            </div>
+            <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-card">
+              <button
+                onClick={() => setView("volunteer")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  view === "volunteer"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                {/* Color bar + content */}
-                <div className="flex">
-                  <div className={`w-1.5 shrink-0 bg-gradient-to-b ${ev.color}`} />
-                  <div className="flex-1 p-4 sm:p-5">
-                    {/* Top row: title + badges */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground text-base sm:text-lg truncate">
-                          {ev.emoji} {ev.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{ev.description}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        {isCreator(ev) && <Badge variant="secondary">Creado por mí</Badge>}
-                        {isJoined(ev) && <Badge variant="outline">Inscrito</Badge>}
-                        {ev.registration_open === false && (
-                          <Badge variant="destructive" className="text-[10px]">🔒 Cerrado</Badge>
-                        )}
-                      </div>
-                    </div>
+                <Heart className="w-4 h-4" />
+                Voluntarios
+              </button>
+              <button
+                onClick={() => setView("organization")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  view === "organization"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                Organización
+              </button>
+              <button
+                onClick={() => setView("admin")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  view === "admin"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                Moderación
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-                    {/* Meta info */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" /> {ev.location}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CalendarDays className="w-3.5 h-3.5" /> {ev.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> {ev.schedule}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" /> Máx. {ev.max_volunteers}
-                      </span>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}`)}>
-                        <Eye className="w-3.5 h-3.5 mr-1" /> Ver
-                      </Button>
-
-                      {isCreator(ev) && (
-                        <>
-                          <Button size="sm" variant="outline" onClick={() => setEditingEvent(ev)}>
-                            <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => navigate(`/evento/${ev.id}/asistencia`)}>
-                            <ClipboardList className="w-3.5 h-3.5 mr-1" /> Asistencia
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
-                            <Copy className="w-3.5 h-3.5 mr-1" /> Duplicar
-                          </Button>
-                        </>
-                      )}
-
-                      {isModerator && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="text-destructive">
-                              <Trash2 className="w-3.5 h-3.5 mr-1" /> Eliminar
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Se eliminarán todas las inscripciones asociadas.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteEvent(ev.id)}>Eliminar</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        {/* Dashboard content — strictly locked to each account type */}
+        {view === "volunteer" ? (
+          <VolunteerDashboard />
+        ) : view === "admin" ? (
+          <AdminPanel />
+        ) : (
+          <OrgDashboard />
         )}
       </main>
-
-      {/* Edit dialog */}
-      {editingEvent && (
-        <EditEventDialog
-          event={editingEvent}
-          open={!!editingEvent}
-          onOpenChange={(open) => { if (!open) setEditingEvent(null); }}
-        />
-      )}
     </div>
   );
 };

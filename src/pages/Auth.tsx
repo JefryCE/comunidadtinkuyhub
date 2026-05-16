@@ -8,8 +8,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useNavigate } from "react-router-dom";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
-
 const TURNSTILE_SITE_KEY = "0x4AAAAAACoJ-5sWnCgxSlI4";
 
 type AuthMode = "login" | "register" | "forgot";
@@ -26,8 +24,6 @@ const Auth = () => {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileInstance>(null);
   const navigate = useNavigate();
 
   // Account type selection step
@@ -58,11 +54,6 @@ const Auth = () => {
   const [businessContact, setBusinessContact] = useState("");
   const [fiscalAddress, setFiscalAddress] = useState("");
 
-  const resetCaptcha = () => {
-    setCaptchaToken(null);
-    turnstileRef.current?.reset();
-  };
-
   const resetForm = () => {
     setEmail(""); setPassword(""); setConfirmPassword(""); setPhone("");
     setFullName(""); setOrgName(""); setOrgType(""); setLegalRep("");
@@ -75,11 +66,9 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { toast.error("Completa todos los campos"); return; }
-    if (!captchaToken) { toast.error("Completa la verificación de seguridad"); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    resetCaptcha();
     if (error) { toast.error(error.message); } else { toast.success("¡Bienvenido de vuelta!"); navigate("/"); }
   };
 
@@ -87,7 +76,6 @@ const Auth = () => {
     if (!email || !password || !phone) { toast.error("Completa todos los campos obligatorios"); return false; }
     if (password !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return false; }
     if (password.length < 6) { toast.error("La contraseña debe tener al menos 6 caracteres"); return false; }
-    if (!captchaToken) { toast.error("Completa la verificación de seguridad"); return false; }
 
     if (accountType === "persona_natural" && !fullName) { toast.error("Ingresa tu nombre completo"); return false; }
     if (accountType === "ong") {
@@ -105,48 +93,40 @@ const Auth = () => {
 
     const displayName = accountType === "persona_natural" ? fullName : accountType === "ong" ? orgName : businessName;
 
+    const profileData: Record<string, any> = {
+      full_name: displayName,
+      account_type: accountType,
+      phone,
+    };
+    if (accountType === "persona_natural") {
+      profileData.full_name = fullName;
+    } else if (accountType === "ong") {
+      profileData.organization_name = orgName;
+      profileData.organization_type = orgType;
+      profileData.legal_representative = legalRep;
+      profileData.ruc = ruc || null;
+      profileData.country = country;
+      profileData.fiscal_district = fiscalDistrict;
+    } else if (accountType === "empresa") {
+      profileData.business_name = businessName;
+      profileData.ruc = businessRuc;
+      profileData.business_sector = businessSector;
+      profileData.legal_representative = businessContact;
+      profileData.fiscal_address = fiscalAddress;
+    }
+
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: displayName },
+        data: profileData,
         emailRedirectTo: window.location.origin,
-        captchaToken,
       },
     });
     setLoading(false);
-    resetCaptcha();
 
     if (error) { toast.error(error.message); return; }
-
-    // Update profile with extra fields
-    if (data.user) {
-      const profileData: Record<string, any> = {
-        account_type: accountType,
-        phone,
-      };
-      if (accountType === "persona_natural") {
-        profileData.full_name = fullName;
-      } else if (accountType === "ong") {
-        profileData.organization_name = orgName;
-        profileData.organization_type = orgType;
-        profileData.legal_representative = legalRep;
-        profileData.ruc = ruc || null;
-        profileData.country = country;
-        profileData.fiscal_district = fiscalDistrict;
-        profileData.full_name = orgName;
-      } else if (accountType === "empresa") {
-        profileData.business_name = businessName;
-        profileData.ruc = businessRuc;
-        profileData.business_sector = businessSector;
-        profileData.legal_representative = businessContact;
-        profileData.fiscal_address = fiscalAddress;
-        profileData.full_name = businessName;
-      }
-
-      await supabase.from("profiles").update(profileData as any).eq("id", data.user.id);
-    }
 
     setRegisteredEmail(email);
   };
@@ -290,11 +270,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <div className="flex justify-center">
-            <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setCaptchaToken(token)} onExpire={() => setCaptchaToken(null)} options={{ theme: "light", size: "normal" }} />
-          </div>
-
-          <Button type="submit" disabled={loading || !captchaToken} className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11">
+          <Button type="submit" disabled={loading} className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11">
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </Button>
         </div>
@@ -320,7 +296,7 @@ const Auth = () => {
 
       <div className="mt-6 text-center text-sm text-muted-foreground">
         ¿Ya tienes cuenta?{" "}
-        <button onClick={() => { setMode("login"); resetForm(); resetCaptcha(); }} className="text-primary font-semibold hover:underline">
+        <button onClick={() => { setMode("login"); resetForm(); }} className="text-primary font-semibold hover:underline">
           Inicia sesión
         </button>
       </div>
@@ -390,13 +366,7 @@ const Auth = () => {
                   </>
                 )}
 
-                {mode === "login" && (
-                  <div className="flex justify-center">
-                    <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setCaptchaToken(token)} onExpire={() => setCaptchaToken(null)} options={{ theme: "light", size: "normal" }} />
-                  </div>
-                )}
-
-                <Button type="submit" disabled={loading || (mode === "login" && !captchaToken)} className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11">
+                <Button type="submit" disabled={loading} className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11">
                   {loading ? "Cargando..." : mode === "login" ? "Iniciar sesión" : "Enviar enlace"}
                 </Button>
               </div>
@@ -431,7 +401,7 @@ const Auth = () => {
               </Button>
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 ¿No tienes cuenta?{" "}
-                <button onClick={() => { setMode("register"); resetForm(); resetCaptcha(); }} className="text-primary font-semibold hover:underline">
+                <button onClick={() => { setMode("register"); resetForm(); }} className="text-primary font-semibold hover:underline">
                   Regístrate gratis
                 </button>
               </div>

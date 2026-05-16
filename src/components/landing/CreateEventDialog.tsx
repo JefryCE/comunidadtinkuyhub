@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, MapPin, CalendarIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -39,11 +39,29 @@ const EVENT_TYPES = [
   { value: "Animales", emoji: "🐾", color: "from-yellow-400 to-amber-500" },
 ];
 
+const TIME_OPTIONS = Array.from({ length: 48 }).map((_, i) => {
+  const hour = Math.floor(i / 2);
+  const min = i % 2 === 0 ? "00" : "30";
+  const ampm = hour < 12 ? "AM" : "PM";
+  const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${h12}:${min} ${ampm}`;
+});
+
 const CreateEventDialog = () => {
-  const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [saving, setSaving] = useState(false);
+  const open = searchParams.get("create") === "true";
+  
+  const setOpen = (val: boolean) => {
+    if (val) {
+      searchParams.set("create", "true");
+    } else {
+      searchParams.delete("create");
+    }
+    setSearchParams(searchParams);
+  };
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
@@ -51,10 +69,41 @@ const CreateEventDialog = () => {
   const [typeIndex, setTypeIndex] = useState<string>("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [schedule, setSchedule] = useState("");
+  const [startTime, setStartTime] = useState("8:00 AM");
+  const [endTime, setEndTime] = useState("12:00 PM");
   const [requirements, setRequirements] = useState("");
-  const [maxVolunteers, setMaxVolunteers] = useState("20");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  
+  // Save draft to localStorage
+  useEffect(() => {
+    const draft = { title, description, typeIndex, location, startTime, endTime, requirements, coords };
+    localStorage.setItem("create-event-draft", JSON.stringify(draft));
+  }, [title, description, typeIndex, location, startTime, endTime, requirements, coords]);
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("create-event-draft");
+    if (saved) {
+      try {
+        const d = JSON.parse(saved);
+        if (d.title) setTitle(d.title);
+        if (d.description) setDescription(d.description);
+        if (d.typeIndex) setTypeIndex(d.typeIndex);
+        if (d.location) setLocation(d.location);
+        if (d.startTime) setStartTime(d.startTime);
+        if (d.endTime) setEndTime(d.endTime);
+        if (d.requirements) setRequirements(d.requirements);
+        if (d.coords) setCoords(d.coords);
+
+        // Auto-open only if there's significant content and it's not already open
+        if ((d.title || d.description) && !open) {
+          setOpen(true);
+        }
+      } catch (e) {
+        console.error("Failed to load draft");
+      }
+    }
+  }, []);
 
   const resetForm = () => {
     setTitle("");
@@ -62,10 +111,11 @@ const CreateEventDialog = () => {
     setTypeIndex("");
     setLocation("");
     setDate(undefined);
-    setSchedule("");
+    setStartTime("8:00 AM");
+    setEndTime("12:00 PM");
     setRequirements("");
-    setMaxVolunteers("20");
     setCoords(null);
+    localStorage.removeItem("create-event-draft");
   };
 
   const handleOpen = () => {
@@ -95,9 +145,9 @@ const CreateEventDialog = () => {
         color: eventType.color,
         location: location.trim(),
         date: date ? format(date, "d 'de' MMMM, yyyy", { locale: es }) : "",
-        schedule: schedule.trim() || "Por definir",
+        schedule: `${startTime} - ${endTime}`,
         requirements: requirements.trim() || "Ninguno",
-        max_volunteers: Number(maxVolunteers) || 20,
+        max_volunteers: 99999,
         created_by: user!.id,
         latitude: coords?.lat ?? null,
         longitude: coords?.lng ?? null,
@@ -125,7 +175,11 @@ const CreateEventDialog = () => {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="sm:max-w-lg max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Crear nuevo evento</DialogTitle>
             <DialogDescription>
@@ -203,13 +257,31 @@ const CreateEventDialog = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="ev-schedule">Horario</Label>
-                <Input id="ev-schedule" value={schedule} onChange={(e) => setSchedule(e.target.value)} placeholder="Ej: 8:00 AM - 12:00 PM" disabled={saving} />
+              <div className="space-y-2">
+                <Label htmlFor="ev-start">Hora inicio</Label>
+                <Select value={startTime} onValueChange={setStartTime} disabled={saving}>
+                  <SelectTrigger id="ev-start">
+                    <SelectValue placeholder="Inicio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_OPTIONS.map((time) => (
+                      <SelectItem key={`start-${time}`} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div>
-                <Label htmlFor="ev-max">Voluntarios máx.</Label>
-                <Input id="ev-max" type="number" min="1" value={maxVolunteers} onChange={(e) => setMaxVolunteers(e.target.value)} disabled={saving} />
+              <div className="space-y-2">
+                <Label htmlFor="ev-end">Hora fin</Label>
+                <Select value={endTime} onValueChange={setEndTime} disabled={saving}>
+                  <SelectTrigger id="ev-end">
+                    <SelectValue placeholder="Fin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_OPTIONS.map((time) => (
+                      <SelectItem key={`end-${time}`} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -218,9 +290,14 @@ const CreateEventDialog = () => {
               <Textarea id="ev-req" value={requirements} onChange={(e) => setRequirements(e.target.value)} placeholder="Ej: Ropa cómoda, protector solar" rows={2} disabled={saving} />
             </div>
 
-            <Button className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90" onClick={handleSubmit} disabled={saving}>
-              {saving ? "Creando..." : "Publicar evento"}
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button className="flex-[2] gradient-cta text-primary-foreground border-0 hover:opacity-90" onClick={handleSubmit} disabled={saving}>
+                {saving ? "Creando..." : "Publicar evento"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

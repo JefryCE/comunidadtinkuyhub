@@ -43,6 +43,7 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [joining, setJoining] = useState(false);
+  const [followingState, setFollowingState] = useState(false);
 
   const eventQuery = useQuery({
     queryKey: ["event-detail", eventId],
@@ -99,12 +100,58 @@ const EventDetail = () => {
     },
   });
 
+  const followQuery = useQuery({
+    queryKey: ["is-following", eventQuery.data?.created_by, user?.id],
+    enabled: !!eventQuery.data?.created_by && !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_follows" as any)
+        .select("id")
+        .eq("follower_id", user!.id)
+        .eq("following_id", eventQuery.data!.created_by!)
+        .maybeSingle();
+      return !!data;
+    },
+  });
+
   const event = eventQuery.data;
   const regCount = registrationsQuery.data ?? 0;
   const isCreator = user?.id === event?.created_by;
   const myReg = myRegQuery.data;
   const isRegistered = !!myReg;
   const isConfirmed = myReg?.attendance_status === "confirmed";
+  const isFollowing = followQuery.data ?? false;
+
+  const handleFollowToggle = async () => {
+    if (!user) {
+      toast.info("Inicia sesión para seguir organizaciones.");
+      navigate("/auth");
+      return;
+    }
+    if (!event?.created_by) return;
+
+    setFollowingState(true);
+    try {
+      if (isFollowing) {
+        await supabase
+          .from("user_follows" as any)
+          .delete()
+          .eq("follower_id", user.id)
+          .eq("following_id", event.created_by);
+        toast.success("Dejaste de seguir a este organizador.");
+      } else {
+        await supabase
+          .from("user_follows" as any)
+          .insert({ follower_id: user.id, following_id: event.created_by });
+        toast.success("¡Ahora sigues a este organizador!");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["is-following"] });
+    } catch (e: any) {
+      toast.error("Error al actualizar seguimiento.");
+    } finally {
+      setFollowingState(false);
+    }
+  };
 
   const handleJoin = async () => {
     if (!user) {
@@ -223,11 +270,37 @@ const EventDetail = () => {
 
             {/* Organizer */}
             {creatorQuery.data && (
-              <div className="flex items-center gap-3 mb-6 text-sm text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                  {(creatorQuery.data.full_name ?? "O").slice(0, 2).toUpperCase()}
-                </div>
-                <span>Organizado por <strong className="text-foreground">{creatorQuery.data.full_name ?? "Organizador"}</strong></span>
+              <div className="flex items-center justify-between mb-6 bg-muted/40 rounded-xl p-3 sm:p-4 border border-border">
+                <button
+                  onClick={() => navigate(`/organizacion/${event.created_by}`)}
+                  className="flex items-center gap-3 text-sm text-left hover:opacity-80 transition-opacity group/org focus:outline-none"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                    {(creatorQuery.data.full_name ?? "O").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground group-hover/org:underline group-hover/org:text-primary transition-colors">Visitar perfil de organizador</p>
+                    <p className="font-bold text-foreground line-clamp-1">{creatorQuery.data.full_name ?? "Organizador"}</p>
+                  </div>
+                </button>
+                {!isCreator && user && event?.created_by && (
+                  <Button
+                    variant={isFollowing ? "outline" : "default"}
+                    size="sm"
+                    className={isFollowing ? "shrink-0 min-w-[110px] border-primary text-primary hover:bg-destructive hover:text-white hover:border-destructive group" : "gradient-cta text-primary-foreground border-0 shrink-0 min-w-[110px]"}
+                    onClick={handleFollowToggle}
+                    disabled={followingState}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <span className="group-hover:hidden flex items-center font-semibold">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Siguiendo
+                        </span>
+                        <span className="hidden group-hover:block">Dejar de seguir</span>
+                      </>
+                    ) : "Seguir"}
+                  </Button>
+                )}
               </div>
             )}
 

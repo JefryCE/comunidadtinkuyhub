@@ -96,6 +96,12 @@ const ManageAttendance = () => {
 
   const handleConfirm = async (reg: Registration) => {
     setProcessing(reg.id);
+    
+    // Optimistic UI update immediately
+    queryClient.setQueryData(["event-registrations", eventId], (old: Registration[]) =>
+      old?.map((r) => (r.id === reg.id ? { ...r, attendance_status: "confirmed", points_awarded: true } : r))
+    );
+
     try {
       const result = await confirmAttendance(reg.id, reg.user_id);
       toast.success(`✅ Asistencia confirmada. +${result.pointsEarned} puntos otorgados.`);
@@ -116,6 +122,12 @@ const ManageAttendance = () => {
 
   const handleNoShow = async (reg: Registration) => {
     setProcessing(reg.id);
+
+    // Optimistic UI update immediately
+    queryClient.setQueryData(["event-registrations", eventId], (old: Registration[]) =>
+      old?.map((r) => (r.id === reg.id ? { ...r, attendance_status: "no_show" } : r))
+    );
+
     try {
       await markNoShow(reg.id);
       toast("❌ Marcado como no asistió.");
@@ -132,6 +144,12 @@ const ManageAttendance = () => {
     if (pendingRegs.length === 0) return;
 
     setProcessing("all");
+
+    // Optimistic UI update immediately
+    queryClient.setQueryData(["event-registrations", eventId], (old: Registration[]) =>
+      old?.map((r) => (r.attendance_status === "pending" ? { ...r, attendance_status: "confirmed", points_awarded: true } : r))
+    );
+
     let count = 0;
     for (const reg of pendingRegs) {
       try {

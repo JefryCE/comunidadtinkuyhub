@@ -61,7 +61,6 @@ const EditEventDialog = ({ event, open, onOpenChange }: Props) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [schedule, setSchedule] = useState(event.schedule);
   const [requirements, setRequirements] = useState(event.requirements);
-  const [maxVolunteers, setMaxVolunteers] = useState(String(event.max_volunteers));
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     event.latitude && event.longitude ? { lat: event.latitude, lng: event.longitude } : null
   );
@@ -73,7 +72,6 @@ const EditEventDialog = ({ event, open, onOpenChange }: Props) => {
     setLocation(event.location);
     setSchedule(event.schedule);
     setRequirements(event.requirements);
-    setMaxVolunteers(String(event.max_volunteers));
     setCoords(event.latitude && event.longitude ? { lat: event.latitude, lng: event.longitude } : null);
   }, [event]);
 
@@ -99,7 +97,7 @@ const EditEventDialog = ({ event, open, onOpenChange }: Props) => {
           date: date ? format(date, "d 'de' MMMM, yyyy", { locale: es }) : event.date,
           schedule: schedule.trim() || "Por definir",
           requirements: requirements.trim() || "Ninguno",
-          max_volunteers: Number(maxVolunteers) || 20,
+          max_volunteers: 99999,
           latitude: coords?.lat ?? null,
           longitude: coords?.lng ?? null,
         })
@@ -178,14 +176,10 @@ const EditEventDialog = ({ event, open, onOpenChange }: Props) => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
               <Label>Horario</Label>
               <Input value={schedule} onChange={(e) => setSchedule(e.target.value)} disabled={saving} />
-            </div>
-            <div>
-              <Label>Voluntarios máx.</Label>
-              <Input type="number" min="1" value={maxVolunteers} onChange={(e) => setMaxVolunteers(e.target.value)} disabled={saving} />
             </div>
           </div>
 
