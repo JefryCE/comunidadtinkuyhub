@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { isEventPast } from "@/lib/utils";
 import {
   MapPin, CalendarDays, ArrowLeft, Users, Building2, Eye, CheckCircle2,
 } from "lucide-react";
@@ -40,17 +41,23 @@ const OrgProfile = () => {
     queryKey: ["org-events", orgId],
     enabled: !!orgId,
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("events")
         .select("*")
         .eq("created_by", orgId!)
-        .gte("date", today)
-        .order("date", { ascending: true });
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const upcomingEvents = useMemo(() => {
+    return (eventsQuery.data ?? []).filter((e: any) => !isEventPast(e.date, e.schedule));
+  }, [eventsQuery.data]);
+
+  const pastEvents = useMemo(() => {
+    return (eventsQuery.data ?? []).filter((e: any) => isEventPast(e.date, e.schedule));
+  }, [eventsQuery.data]);
 
   // Check if current user is following this organization
   const followQuery = useQuery({
@@ -68,7 +75,7 @@ const OrgProfile = () => {
   });
 
   const org = orgQuery.data;
-  const events = eventsQuery.data ?? [];
+  const events = upcomingEvents;
   const isFollowing = followQuery.data ?? false;
   const isSelf = user?.id === orgId;
 
@@ -165,6 +172,7 @@ const OrgProfile = () => {
                 <div className="flex flex-wrap gap-3 justify-center sm:justify-start mb-6 text-sm text-primary">
                   {org.website && <a href={org.website} target="_blank" rel="noreferrer" className="hover:underline">Sitio Web</a>}
                   {org.instagram && <a href={org.instagram} target="_blank" rel="noreferrer" className="hover:underline">Instagram</a>}
+                  {org.linkedin && <a href={org.linkedin} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a>}
                   {org.facebook && <a href={org.facebook} target="_blank" rel="noreferrer" className="hover:underline">Facebook</a>}
                 </div>
               )}

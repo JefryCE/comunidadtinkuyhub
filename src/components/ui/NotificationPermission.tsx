@@ -42,7 +42,7 @@ const NotificationPermission = () => {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 100, opacity: 0, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[90vw] max-w-md"
+          className="fixed bottom-6 inset-x-4 z-[100] mx-auto max-w-md"
         >
           <div className="bg-card border border-border rounded-2xl shadow-2xl p-5 relative overflow-hidden">
             {/* Glow accent */}

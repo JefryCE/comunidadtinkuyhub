@@ -1,4 +1,5 @@
 import { Leaf } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -41,7 +42,8 @@ const Footer = () => {
             <h4 className="font-semibold text-foreground mb-3 text-sm">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="#" className="hover:text-foreground transition-colors">Términos</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Privacidad</a></li>
+              <li><Link to="/privacidad" className="hover:text-foreground transition-colors">Privacidad</Link></li>
+              <li><Link to="/eliminar-cuenta" className="hover:text-foreground transition-colors">Eliminar cuenta</Link></li>
             </ul>
           </div>
         </div>

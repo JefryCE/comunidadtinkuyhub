@@ -445,6 +445,18 @@ const Profile = () => {
                 </Button>
               </div>
             </div>
+
+            <div className="bg-card border border-destructive/30 rounded-2xl shadow-card p-6">
+              <h2 className="text-xl font-bold text-card-foreground">Eliminar cuenta</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Eliminar tu cuenta borra tu perfil, puntos, insignias, inscripciones y fotos de forma permanente.
+              </p>
+              <div className="mt-4">
+                <Button variant="destructive" onClick={() => navigate("/eliminar-cuenta")}>
+                  Eliminar mi cuenta
+                </Button>
+              </div>
+            </div>
           </section>
         </div>
       </main>

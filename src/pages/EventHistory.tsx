@@ -55,6 +55,8 @@ const EventHistory = () => {
 
   const [events, setEvents] = useState<CompletedEvent[]>([]);
   const [badges, setBadges] = useState<BadgeCatalog[]>([]);
+  const [earnedBadgesMap, setEarnedBadgesMap] = useState<Map<string, string>>(new Map());
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -82,10 +84,23 @@ const EventHistory = () => {
         .eq("user_id", user.id)
         .order("registered_at", { ascending: false });
 
-      // 2. Get all badges
+      // 2. Get badge catalog
       const { data: allBadges } = await supabase
         .from("badges" as any)
         .select("*");
+
+      // 3. Get already-earned badges (from gamification system)
+      const { data: earnedBadges } = await supabase
+        .from("earned_badges" as any)
+        .select("badge_id, earned_at")
+        .eq("user_id", user.id);
+
+      // 4. Get gamification profile
+      const { data: gamificationProfile } = await supabase
+        .from("gamification_profiles" as any)
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
       if (regs) {
         const mapped: CompletedEvent[] = (regs as any[]).map((r) => ({
@@ -110,6 +125,17 @@ const EventHistory = () => {
         setBadges(allBadges as any as BadgeCatalog[]);
       }
 
+      if (gamificationProfile) {
+        setProfile(gamificationProfile);
+      }
+
+      // Store earned badges for lookup
+      if (earnedBadges) {
+        setEarnedBadgesMap(new Map(
+          (earnedBadges as any[]).map((b: any) => [b.badge_id, b.earned_at])
+        ));
+      }
+
       setLoading(false);
     };
 
@@ -130,8 +156,19 @@ const EventHistory = () => {
     const socialCount = completedEvents.filter((e) =>
       ["Social", "Salud"].includes(e.event.type)
     ).length;
+    const longestStreak = profile?.longest_streak ?? 0;
+    const totalPoints = profile?.total_points ?? 0;
 
     return badges.map((badge) => {
+      // Primero ver si ya fue ganado vía gamificación (earned_badges)
+      if (earnedBadgesMap.has(badge.id)) {
+        return {
+          ...badge,
+          earned: true,
+          earned_at: earnedBadgesMap.get(badge.id),
+        };
+      }
+
       let earned = false;
 
       switch (badge.requirement_type) {
@@ -151,8 +188,10 @@ const EventHistory = () => {
           earned = types.size >= badge.requirement_value;
           break;
         case "streak":
-          // Simplified: count consecutive attended events
-          earned = completedCount >= badge.requirement_value;
+          earned = longestStreak >= badge.requirement_value;
+          break;
+        case "points":
+          earned = totalPoints >= badge.requirement_value;
           break;
         default:
           earned = false;
@@ -164,7 +203,7 @@ const EventHistory = () => {
         earned_at: earned ? new Date().toISOString() : undefined,
       };
     });
-  }, [events, badges]);
+  }, [events, badges, earnedBadgesMap, profile]);
 
   // Generate PDF certificate
   const exportPDF = () => {

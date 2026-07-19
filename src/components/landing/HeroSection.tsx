@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import heroImage from "@/assets/hero-volunteers.jpg";
+import heroImage from "@/assets/pmp-playa.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();

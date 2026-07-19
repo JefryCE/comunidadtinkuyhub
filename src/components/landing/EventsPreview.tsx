@@ -74,11 +74,9 @@ const EventsPreview = () => {
   const eventsQuery = useQuery({
     queryKey: ["events"],
     queryFn: async (): Promise<EventRow[]> => {
-      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .gte("date", today)
         .order("date", { ascending: true });
       if (error) throw error;
       return (data ?? []) as EventRow[];

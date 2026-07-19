@@ -59,11 +59,9 @@ const VolunteerDashboard = () => {
     queryKey: ["vol-dashboard-events"],
     enabled: !!user,
     queryFn: async (): Promise<EventRow[]> => {
-      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .gte("date", today)
         .order("date", { ascending: true });
       if (error) throw error;
       return (data ?? []) as unknown as EventRow[];
@@ -162,6 +160,7 @@ const VolunteerDashboard = () => {
             });
           }
           queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+          queryClient.invalidateQueries({ queryKey: ["gamification-profile"] });
         }
       } catch (error) {
         console.error("Failed to claim points", error);

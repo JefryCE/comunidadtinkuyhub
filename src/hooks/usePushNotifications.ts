@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,11 +15,16 @@ export interface NotificationSettings {
   frequency: NotificationFrequency;
   last_lat: number | null;
   last_lng: number | null;
+  fcm_token: string | null;
+  fcm_token_updated_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-const DEFAULT_SETTINGS: Omit<NotificationSettings, "id" | "user_id" | "created_at" | "updated_at"> = {
+const DEFAULT_SETTINGS: Omit<
+  NotificationSettings,
+  "id" | "user_id" | "created_at" | "updated_at" | "fcm_token" | "fcm_token_updated_at"
+> = {
   push_enabled: true,
   email_enabled: true,
   proximity_radius_km: 10,
@@ -76,8 +82,62 @@ export function usePushNotifications() {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Request browser notification permission
+  // Registra el token FCM del dispositivo en user_notification_settings para que
+  // el backend (pendiente: Edge Function despachadora, ver plan de app Android)
+  // pueda enviar push reales. Solo aplica dentro de la app nativa (Capacitor).
+  const registerNativePush = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+
+    const { PushNotifications } = await import("@capacitor/push-notifications");
+
+    const permStatus = await PushNotifications.checkPermissions();
+    let granted = permStatus.receive === "granted";
+
+    if (!granted && permStatus.receive !== "denied") {
+      const req = await PushNotifications.requestPermissions();
+      granted = req.receive === "granted";
+    }
+
+    if (!granted) {
+      toast.error("Las notificaciones están bloqueadas. Habilítalas en la configuración de Android.");
+      setPermissionState("denied");
+      return false;
+    }
+
+    setPermissionState("granted");
+
+    return new Promise((resolve) => {
+      PushNotifications.addListener("registration", async (token) => {
+        try {
+          await supabase
+            .from("user_notification_settings" as any)
+            .update({ fcm_token: token.value, fcm_token_updated_at: new Date().toISOString() } as any)
+            .eq("user_id", user.id);
+          toast.success("🔔 ¡Notificaciones activadas!");
+          resolve(true);
+        } catch (e: any) {
+          console.error("No se pudo guardar el token de notificaciones:", e);
+          resolve(false);
+        }
+      });
+
+      PushNotifications.addListener("registrationError", (err) => {
+        console.error("Error registrando push notifications:", err);
+        toast.error("No se pudo activar las notificaciones push.");
+        resolve(false);
+      });
+
+      PushNotifications.register();
+    });
+  }, [user]);
+
+  // Solicita permiso de notificaciones. En la app nativa registra push reales (FCM);
+  // en navegador usa la Notification API (no llega con la app/pestaña cerrada).
   const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (Capacitor.isNativePlatform()) {
+      return registerNativePush();
+    }
+
     if (typeof Notification === "undefined") {
       toast.error("Tu navegador no soporta notificaciones push.");
       return false;
@@ -104,7 +164,7 @@ export function usePushNotifications() {
       toast.info("No se activaron las notificaciones.");
       return false;
     }
-  }, []);
+  }, [registerNativePush]);
 
   // Update settings in DB
   const updateSettings = useCallback(
@@ -151,9 +211,11 @@ export function usePushNotifications() {
     );
   }, [user, updateSettings]);
 
-  // Send a local browser notification
+  // Send a local browser notification (no aplica en la app nativa: ahí las push
+  // reales las entrega el sistema operativo vía FCM, no el navegador).
   const sendLocalNotification = useCallback((title: string, body: string, url?: string) => {
-    if (Notification.permission !== "granted") return;
+    if (Capacitor.isNativePlatform()) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 
     const notif = new Notification(title, {
       body,

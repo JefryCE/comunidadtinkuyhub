@@ -112,6 +112,7 @@ export type Database = {
           id: string
           points_awarded: boolean
           registered_at: string
+          transport_stop_id: string | null
           user_id: string
         }
         Insert: {
@@ -120,6 +121,7 @@ export type Database = {
           id?: string
           points_awarded?: boolean
           registered_at?: string
+          transport_stop_id?: string | null
           user_id: string
         }
         Update: {
@@ -128,11 +130,104 @@ export type Database = {
           id?: string
           points_awarded?: boolean
           registered_at?: string
+          transport_stop_id?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_transport_stop_id_fkey"
+            columns: ["transport_stop_id"]
+            isOneToOne: false
+            referencedRelation: "event_transport_stops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_sessions: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string
+          event_id: string
+          id: string
+          session_order: number
+          start_time: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          end_time: string
+          event_id: string
+          id?: string
+          session_order?: number
+          start_time: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string
+          event_id?: string
+          id?: string
+          session_order?: number
+          start_time?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sessions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_transport_stops: {
+        Row: {
+          address: string
+          created_at: string
+          event_id: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          pickup_time: string
+          stop_order: number
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          event_id: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          pickup_time: string
+          stop_order?: number
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          pickup_time?: string
+          stop_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_transport_stops_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -153,6 +248,8 @@ export type Database = {
           location: string
           longitude: number | null
           max_volunteers: number
+          offers_transport: boolean
+          is_multiday: boolean
           registration_open: boolean
           requirements: string
           schedule: string
@@ -171,6 +268,8 @@ export type Database = {
           location: string
           longitude?: number | null
           max_volunteers: number
+          offers_transport?: boolean
+          is_multiday?: boolean
           registration_open?: boolean
           requirements: string
           schedule: string
@@ -189,6 +288,8 @@ export type Database = {
           location?: string
           longitude?: number | null
           max_volunteers?: number
+          offers_transport?: boolean
+          is_multiday?: boolean
           registration_open?: boolean
           requirements?: string
           schedule?: string

@@ -5,9 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const SPANISH_MONTHS: Record<string, number> = {
+  enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+  julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11,
+};
+
+export function parseSpanishDate(dateStr: string): Date | null {
+  // Formato esperado: "9 de junio, 2026"
+  const match = dateStr.match(/^(\d{1,2})\s+de\s+(\w+)[,\s]*(\d{4})$/i);
+  if (!match) return null;
+  const day = parseInt(match[1], 10);
+  const monthName = match[2].toLowerCase();
+  const year = parseInt(match[3], 10);
+  const month = SPANISH_MONTHS[monthName];
+  if (month === undefined) return null;
+  return new Date(year, month, day);
+}
+
 /**
  * Checks if an event is in the past based on its date and schedule string.
- * @param dateStr Event date in YYYY-MM-DD format
+ * @param dateStr Event date in "d de MMMM, yyyy" (Spanish) or YYYY-MM-DD format
  * @param scheduleStr Event time description, e.g., "10:00 - 14:00"
  */
 export function isEventPast(dateStr: string, scheduleStr?: string): boolean {
@@ -15,9 +32,18 @@ export function isEventPast(dateStr: string, scheduleStr?: string): boolean {
   
   const now = new Date();
   
-  // Parse YYYY-MM-DD reliably in local time
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const eventDate = new Date(year, month - 1, day);
+  // Try Spanish format first (e.g. "9 de junio, 2026")
+  let eventDate = parseSpanishDate(dateStr);
+  
+  // Fallback to YYYY-MM-DD format
+  if (!eventDate) {
+    const parts = dateStr.split('-').map(Number);
+    if (parts.length === 3 && !isNaN(parts[0])) {
+      eventDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+  }
+  
+  if (!eventDate || isNaN(eventDate.getTime())) return false;
   
   // Set to today locally for comparison without time
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -48,17 +74,13 @@ export function isEventPast(dateStr: string, scheduleStr?: string): boolean {
       } else if (period && period.includes('a') && hours === 12) {
         hours = 0;
       } else if (!period && hours < 12 && s.includes('pm')) {
-        // Fallback: if 'pm' is somewhere in the string, assume hours < 12 are PM
-        // (This handles "De 3 a 5 pm" -> both 3 and 5 become PM)
         hours += 12;
       }
       
       lastParsedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
     }
     
-    // If we successfully parsed at least one time
     if (lastParsedDate) {
-      // If we are currently past the LAST mentioned time, consider it past
       if (now > lastParsedDate) {
         return true;
       }
@@ -66,6 +88,5 @@ export function isEventPast(dateStr: string, scheduleStr?: string): boolean {
     }
   }
   
-  // If it's today and we can't parse the time, assume it's still active today
   return false;
 }

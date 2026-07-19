@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Leaf, Mail, Lock, User, Eye, EyeOff, ArrowLeft, CheckCircle2, Phone, Building2, Briefcase, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { signInWithGoogle } from "@/lib/nativeAuth";
 import { useNavigate } from "react-router-dom";
 const TURNSTILE_SITE_KEY = "0x4AAAAAACoJ-5sWnCgxSlI4";
 
@@ -22,9 +23,18 @@ const ACCOUNT_TYPES: { value: AccountType; label: string; description: string; i
 const Auth = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") === "true") {
+      setEmailVerified(true);
+      toast.success("¡Correo verificado con éxito!");
+    }
+  }, []);
 
   // Account type selection step
   const [accountType, setAccountType] = useState<AccountType | null>(null);
@@ -121,7 +131,7 @@ const Auth = () => {
       password,
       options: {
         data: profileData,
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/auth?verified=true`,
       },
     });
     setLoading(false);
@@ -144,6 +154,41 @@ const Auth = () => {
     setAccountType(type);
     setShowAccountTypeSelector(false);
   };
+
+  // --- Email Verified screen ---
+  if (emailVerified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-3xl -z-10" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md text-center">
+          <div className="mb-6">
+            <button onClick={() => navigate("/")} className="inline-flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl gradient-hero flex items-center justify-center">
+                <Leaf className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="text-2xl font-bold text-foreground">TINKUYHUB</span>
+            </button>
+          </div>
+          <div className="bg-card rounded-2xl border border-border shadow-card p-8">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground mb-2">¡Correo verificado con éxito!</h1>
+            <p className="text-sm text-muted-foreground mb-6">Tu cuenta ha sido activada correctamente. Ahora eres parte de TinkuyHub.</p>
+            <div className="space-y-3">
+              <Button onClick={() => navigate("/onboarding")} className="w-full gradient-cta text-primary-foreground border-0 hover:opacity-90 h-11">
+                Completar encuesta de bienvenida
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/")} className="w-full h-11">
+                Ir al inicio
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   // --- Success screen ---
   if (registeredEmail) {
@@ -282,8 +327,9 @@ const Auth = () => {
       </div>
 
       <Button type="button" variant="outline" className="w-full h-11" onClick={async () => {
-        const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-        if (error) toast.error(error.message);
+        const { error } = await signInWithGoogle();
+        if (error) { toast.error(error); return; }
+        navigate("/");
       }}>
         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -388,8 +434,9 @@ const Auth = () => {
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">o continúa con</span></div>
               </div>
               <Button type="button" variant="outline" className="w-full h-11" onClick={async () => {
-                const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                if (error) toast.error(error.message);
+                const { error } = await signInWithGoogle();
+                if (error) { toast.error(error); return; }
+                navigate("/");
               }}>
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>

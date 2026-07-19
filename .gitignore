@@ -22,3 +22,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables de entorno (aunque hoy solo contiene valores VITE_* públicos,
+# nunca debe versionarse — ver auditoría de seguridad 2026-07)
+.env
+.env.*
+
+# Scripts operativos con credenciales o PII — NUNCA subir
+apply-migration.ts
+create-admin.ts
+apply-rpc.ts
+scratch/
+cambiar_password.sql
+query_usuarios.sql
+
+# Documentos internos (mapa de vulnerabilidades, no publicar)
+TinkuyHub-Auditoria-Tecnica.pdf
+
+# Estado local de la CLI de Supabase
+supabase/.temp/

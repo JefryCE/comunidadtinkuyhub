@@ -68,7 +68,7 @@ type RegistrationRow = {
 
 const OrgDashboard = () => {
   const { user } = useAuth();
-  const { isModerator } = useUserRole();
+  const { isAdmin, isModerator } = useUserRole();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -370,7 +370,7 @@ const OrgDashboard = () => {
                         <Copy className="w-3.5 h-3.5 mr-1" /> Duplicar
                       </Button>
 
-                      {isModerator && (
+                      {isAdmin && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button

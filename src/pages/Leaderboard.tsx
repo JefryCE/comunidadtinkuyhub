@@ -28,7 +28,7 @@ const Leaderboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground flex items-center gap-3">
