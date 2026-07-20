@@ -4,6 +4,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn(),
+    // checkAndAwardBadges ahora delega en la RPC server-side award_my_badges
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
   },
 }));
 

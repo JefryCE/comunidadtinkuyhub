@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { claimPendingPoints, BADGES } from "@/lib/gamification";
+import { BADGES } from "@/lib/gamification";
 import { isEventPast } from "@/lib/utils";
 
 
@@ -150,7 +150,12 @@ const VolunteerDashboard = () => {
     
     const claimPoints = async () => {
       try {
-        const { newPoints, newBadges } = await claimPendingPoints(user.id);
+        // Server-side: solo cobra registros ya confirmados del propio usuario
+        // (RPC claim_my_pending_points, ver migración de seguridad 2026-07-19)
+        const { data, error } = await supabase.rpc("claim_my_pending_points" as any);
+        if (error) throw error;
+        const newPoints: number = (data as any)?.points ?? 0;
+        const newBadges: string[] = (data as any)?.new_badges ?? [];
         if (newPoints > 0) {
           toast.success(`🎉 ¡Asistencia validada! Has ganado +${newPoints} puntos.`);
           if (newBadges.length > 0) {

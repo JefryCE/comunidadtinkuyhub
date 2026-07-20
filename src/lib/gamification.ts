@@ -283,28 +283,15 @@ export const getGamificationStats = async (userId: string, profile: Gamification
   };
 };
 
-export const checkAndAwardBadges = async (userId: string, stats: GamificationStats) => {
-  const { data: existingBadges } = await supabase
-    .from("earned_badges")
-    .select("badge_id")
-    .eq("user_id", userId) as any;
-
-  const earnedIds = new Set((existingBadges ?? []).map((b: any) => b.badge_id));
-  const newBadges: string[] = [];
-
-  for (const badge of BADGES) {
-    if (!earnedIds.has(badge.id) && badge.condition(stats)) {
-      newBadges.push(badge.id);
-    }
-  }
-
-  if (newBadges.length > 0) {
-    await supabase.from("earned_badges").insert(
-      newBadges.map((badge_id) => ({ user_id: userId, badge_id }))
-    ) as any;
-  }
-
-  return newBadges;
+// El otorgamiento real ocurre en el servidor (RPC award_my_badges, que
+// recalcula la elegibilidad desde la BD e ignora cualquier intento de
+// insertarse insignias a mano). Este helper solo dispara esa revisión y
+// devuelve las insignias nuevas. `stats` se mantiene en la firma por
+// compatibilidad con los llamadores/tests existentes.
+export const checkAndAwardBadges = async (_userId: string, _stats: GamificationStats) => {
+  const { data, error } = await supabase.rpc("award_my_badges" as any);
+  if (error) return [];
+  return (data ?? []) as string[];
 };
 
 const _processingClaims = new Set<string>();

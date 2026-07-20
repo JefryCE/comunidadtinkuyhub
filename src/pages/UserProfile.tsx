@@ -22,9 +22,15 @@ const UserProfile = () => {
     queryKey: ["user-profile", userId],
     enabled: !!userId,
     queryFn: async () => {
+      // Solo columnas públicas: los datos fiscales/de contacto (RUC, teléfono,
+      // dirección fiscal, representante legal, email) no se muestran en
+      // perfiles públicos y están revocados para visitantes sin sesión
+      // (ver migración de seguridad 2026-07-19).
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(
+          "id, full_name, avatar_url, bio, account_type, organization_name, organization_type, business_name, business_sector, country, linkedin, facebook, tiktok, instagram, website, created_at"
+        )
         .eq("id", userId!)
         .single();
       if (error) throw error;
@@ -182,6 +188,9 @@ const UserProfile = () => {
               {profile.account_type === "ong" ? "Detalles de la Organización" : "Detalles de la Empresa"}
             </h2>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              {/* Los datos fiscales/de contacto (RUC, representante legal,
+                  dirección y distrito fiscal) ya no se muestran en perfiles
+                  públicos — ver auditoría de seguridad 2026-07. */}
               {profile.account_type === "ong" ? (
                 <>
                   {profile.organization_name && (
@@ -190,17 +199,8 @@ const UserProfile = () => {
                   {profile.organization_type && (
                     <div><Label className="text-muted-foreground">Tipo</Label><p className="font-medium">{profile.organization_type}</p></div>
                   )}
-                  {profile.legal_representative && (
-                    <div><Label className="text-muted-foreground">Representante legal</Label><p className="font-medium">{profile.legal_representative}</p></div>
-                  )}
-                  {profile.ruc && (
-                    <div><Label className="text-muted-foreground">RUC</Label><p className="font-medium">{profile.ruc}</p></div>
-                  )}
                   {profile.country && (
                     <div><Label className="text-muted-foreground">País</Label><p className="font-medium">{profile.country}</p></div>
-                  )}
-                  {profile.fiscal_district && (
-                    <div><Label className="text-muted-foreground">Distrito fiscal</Label><p className="font-medium">{profile.fiscal_district}</p></div>
                   )}
                 </>
               ) : (
@@ -210,15 +210,6 @@ const UserProfile = () => {
                   )}
                   {profile.business_sector && (
                     <div><Label className="text-muted-foreground">Rubro</Label><p className="font-medium">{profile.business_sector}</p></div>
-                  )}
-                  {profile.legal_representative && (
-                    <div><Label className="text-muted-foreground">Contacto</Label><p className="font-medium">{profile.legal_representative}</p></div>
-                  )}
-                  {profile.ruc && (
-                    <div><Label className="text-muted-foreground">RUC</Label><p className="font-medium">{profile.ruc}</p></div>
-                  )}
-                  {profile.fiscal_address && (
-                    <div><Label className="text-muted-foreground">Dirección fiscal</Label><p className="font-medium">{profile.fiscal_address}</p></div>
                   )}
                 </>
               )}

@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { awardPointsForCreate, BADGES } from "@/lib/gamification";
+import { BADGES } from "@/lib/gamification";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -326,24 +326,16 @@ const CreateEventDialog = () => {
         if (stopsError) throw stopsError;
       }
 
-      // Otorgar puntos por crear evento y mostrar toasts
-      awardPointsForCreate(user!.id)
-        .then((result) => {
-          if (result) {
-            toast.success(`🎉 ¡Evento creado exitosamente! Has ganado +${result.pointsEarned} puntos.`);
-            if (result.newBadges && result.newBadges.length > 0) {
-              result.newBadges.forEach((badgeId) => {
-                const badge = BADGES.find((b) => b.id === badgeId);
-                if (badge) toast.success(`🏅 ¡Medalla desbloqueada: ${badge.name}!`);
-              });
-            }
-          } else {
-            toast.success("🎉 ¡Evento creado exitosamente!");
-          }
-        })
-        .catch((err) => {
-          console.error("Error al otorgar puntos por creación:", err);
-          toast.success("🎉 ¡Evento creado exitosamente!");
+      // Los +30 puntos los otorga la BD (trigger on_event_created_award_points);
+      // aquí solo refrescamos insignias y mostramos los toasts.
+      toast.success("🎉 ¡Evento creado exitosamente! Has ganado +30 puntos.");
+      supabase
+        .rpc("award_my_badges" as any)
+        .then(({ data }: any) => {
+          (data ?? []).forEach((badgeId: string) => {
+            const badge = BADGES.find((b) => b.id === badgeId);
+            if (badge) toast.success(`🏅 ¡Medalla desbloqueada: ${badge.name}!`);
+          });
         });
 
       queryClient.invalidateQueries({ queryKey: ["events"] });

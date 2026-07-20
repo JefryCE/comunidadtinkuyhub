@@ -26,9 +26,13 @@ const OrgProfile = () => {
     queryKey: ["org-profile", orgId],
     enabled: !!orgId,
     queryFn: async () => {
+      // Solo columnas públicas (los campos fiscales están revocados para
+      // visitantes sin sesión — ver migración de seguridad 2026-07-19)
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(
+          "id, full_name, avatar_url, bio, account_type, organization_name, organization_type, website, linkedin, facebook, instagram, tiktok, created_at"
+        )
         .eq("id", orgId!)
         .single();
       if (error) throw error;
